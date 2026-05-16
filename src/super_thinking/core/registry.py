@@ -121,6 +121,9 @@ class Registry:
                         continue
                     attr = getattr(module, attr_name)
                     if isinstance(attr, type) and attr is not Perspective:
+                        # Skip if it doesn't look like a perspective (no 'think' method)
+                        if not hasattr(attr, 'think'):
+                            continue
                         try:
                             # Instantiate and validate once
                             instance = attr()

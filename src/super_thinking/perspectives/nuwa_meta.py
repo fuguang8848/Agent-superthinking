@@ -317,7 +317,7 @@ class PerspectiveGenerator:
 
 # ===== Nuwa 元视角 =====
 
-class NuwaMetaPerspective:
+class NuwaMetaPerspective(Perspective):
     """
     女娲元视角 - 视角的视角生成器。
 
@@ -328,16 +328,28 @@ class NuwaMetaPerspective:
     4. 如需要，动态生成新视角
     """
 
-    id = "nuwa_meta"
-    name = "女娲元视角"
-    description = "视角生成器：诊断需求，评估现有视角，必要时动态生成新视角"
-    trigger_keywords = [
-        "创造", "生成", "设计", "构思", "新视角", "新思维",
-        "没有合适的", "没有能用的", "还有别的吗",
-        "这个情况用什么视角", "从XX角度分析",
-    ]
+    @property
+    def id(self) -> str:
+        return "nuwa_meta"
+
+    @property
+    def name(self) -> str:
+        return "女娲元视角"
+
+    @property
+    def description(self) -> str:
+        return "视角生成器：诊断需求，评估现有视角，必要时动态生成新视角"
+
+    @property
+    def trigger_keywords(self) -> list[str]:
+        return [
+            "创造", "生成", "设计", "构思", "新视角", "新思维",
+            "没有合适的", "没有能用的", "还有别的吗",
+            "这个情况用什么视角", "从XX角度分析",
+        ]
 
     def __init__(self):
+        super().__init__()
         self.generator = PerspectiveGenerator()
         self.perspective_types = PERSPECTIVE_TYPES
 
