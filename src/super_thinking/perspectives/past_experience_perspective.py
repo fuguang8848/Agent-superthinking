@@ -1,244 +1,143 @@
-"""Past Experience Perspective - 过往经历视角
-
-调用上下文中的历史记忆，分析"以前类似情况怎么做"。
-触发关键词: 以前、上次、之前、过去、曾经、历史、经验
-"""
+"""Past Experience Perspective - 基于达尔文进化论 + 认知心理学"""
 
 from super_thinking.perspectives._interface import Perspective, PerspectiveOutput
 
 
 class PastExperiencePerspective(Perspective):
-    """过往经历视角：关联历史经验，为当前问题提供参考路径."""
+    """
+    过往经历视角：从历史经验中提取模式、类比推理、教训学习。
+
+    核心心智模型：
+    1. 达尔文进化机制 - 变异+选择+遗传，环境压力是主驱动力
+    2. 自然选择类比 - 好策略像好基因一样被保留，坏策略被淘汰
+    3. 认知锚定 - 过去的成功经验会成为未来的判断锚点（好/坏两方面）
+    4. 确认偏误回溯 - 人倾向于选择性地记住所验证自己观点的经历
+    5. 模式识别 - 从历史数据中提取可复用的教训，而非记住所有细节
+
+    适用场景：从历史案例提取模式、评估「以前这样做是否有效」、类比推理
+    触发词：以前、之前、过去、曾经、历史经验、教训、成功案例、失败案例、类比
+    """
 
     @property
     def id(self) -> str:
-        return "past_experience_perspective"
+        return "past_experience"
 
     @property
     def name(self) -> str:
-        return "过往经历视角"
+        return "达尔文经验视角"
 
     @property
     def description(self) -> str:
-        return "调用上下文中的历史记忆，分析'以前类似情况怎么做'，从历史经验中提取可复用的教训和成功因素。"
+        return (
+            "达尔文经验学习框架：进化机制应用于经验分析（变异+选择+遗传）、自然选择类比（好策略像好基因被保留）、"
+            "认知锚定（过去经验成为判断锚点）、确认偏误回溯警惕（选择性记忆）、模式识别（提取可复用教训而非记住所有细节）。"
+            "从历史案例提取模式，评估以前类似情况的做法，判断经验是否仍适用。"
+        )
 
     @property
     def trigger_keywords(self) -> list[str]:
         return [
-            "以前", "上次", "之前", "过去", "曾经", "历史",
-            "经验", "记得", "以前做过", "类似情况", "参照",
-            "过去怎么", "以前遇到", "和上次", "和以前",
+            "以前", "之前", "过去", "曾经", "历史经验", "教训", "成功案例",
+            "失败案例", "类比", "类似情况", "重复", "模式", "历史", "达尔文",
+            "进化", "经验", "经历", "借鉴", "参照",
         ]
 
-    def think(self, input: str, context: dict) -> PerspectiveOutput:
-        """Execute past experience-based analysis."""
-        # 从 context 中提取历史记忆
-        memory_data = self._extract_memory(context)
-        similar_cases = self._find_similar_cases(input, context, memory_data)
-        lessons = self._extract_lessons(similar_cases, memory_data)
-        recommendations = self._generate_recommendations(input, similar_cases, lessons)
+    def think(self, input_str: str, context: dict) -> PerspectiveOutput:
+        input_lower = input_str.lower()
+        key_points = []
+        warnings = []
+        analysis_parts = []
 
-        analysis_parts = [
-            "## 📜 过往经历分析\n",
-            f"**当前问题**: {input}\n",
-            "---\n",
-            "### 🔄 类似经历回顾\n",
-        ]
+        # ─── 模型1: 达尔文进化机制 ───
+        if any(kw in input_lower for kw in ["进化", "变异", "选择", "遗传", "适应", "演化", "压力"]):
+            key_points.append("【进化机制】变异+选择+遗传：好策略像好基因一样被保留")
+            analysis_parts.append(
+                "达尔文进化框架应用于经验分析：\n"
+                "• 变异：新策略不断产生（试错）\n"
+                "• 选择：环境压力筛选（市场竞争/用户选择/结果验证）\n"
+                "• 遗传：好策略被复制传承\n\n"
+                "评估经验时问：这个策略是经过选择压力验证的，还是只在稳定环境中有效？\n"
+                "环境变了=选择压力变了=过去的好策略可能变成坏策略。"
+            )
 
-        if similar_cases:
-            for i, case in enumerate(similar_cases, 1):
-                analysis_parts.append(f"**案例{i}**: {case.get('summary', '无描述')}")
-                analysis_parts.append(f"  时间: {case.get('when', '未知')}")
-                analysis_parts.append(f"  结果: {case.get('outcome', '未知')}")
-                analysis_parts.append("")
-        else:
-            analysis_parts.append("未在历史记忆中找到直接相关案例。\n")
-            analysis_parts.append("尝试扩大搜索范围或从相邻领域寻找类似经验...\n")
+        # ─── 模型2: 自然选择类比 ───
+        if any(kw in input_lower for kw in ["策略", "方法", "方案", "选择", "竞争", "市场", "生存"]):
+            key_points.append("【自然选择类比】这个策略在什么环境下被选择？环境变了吗？")
+            analysis_parts.append(
+                "类比自然选择评估策略：\n"
+                "1. 这个策略在什么「环境」中被验证？（技术环境/市场竞争/组织文化）\n"
+                "2. 环境变了吗？（技术更新/市场成熟/团队扩张）\n"
+                "3. 如果环境变了，这个策略还有效吗？\n\n"
+                "成功案例需要问：成功是因为策略好，还是因为环境恰好配合？"
+            )
 
-        analysis_parts.extend([
-            "### 📖 历史教训\n",
-        ])
+        # ─── 模型3: 认知锚定 ───
+        if any(kw in input_lower for kw in ["经验", "成功", "失败", "判断", "决策", "以前", "过去"]):
+            key_points.append("【认知锚定警惕】过去经验会成为未来判断的锚点——可能是资产也可能是负债")
+            analysis_parts.append(
+                "认知锚定效应：\n"
+                "• 过去的成功经验 → 可能导致过度自信（这次也会成功）\n"
+                "• 过去的失败教训 → 可能导致过度规避（这次也会失败）\n"
+                "两者都可能是偏误，关键是识别当前情境与过去情境的差异。\n\n"
+                "检验问题：\n"
+                "• 当时成功的关键因素现在还存在吗？\n"
+                "• 这个判断是真正基于分析，还是只是「上次这样做成功了」？"
+            )
+            warnings.append("锚定效应：过去的成功/失败经验会不成比例地影响当前判断——需要主动检验情境是否真正相似")
 
-        if lessons:
-            for lesson in lessons:
-                analysis_parts.append(f"- **{lesson['what']}**")
-                analysis_parts.append(f"  来源: {lesson['source']}")
-                if lesson.get('applicability'):
-                    analysis_parts.append(f"  适用性: {lesson['applicability']}")
-                analysis_parts.append("")
-        else:
-            analysis_parts.append("从当前问题出发，推演历史可能提供的教训:\n")
-            derived_lessons = self._derive_lessons_from_input(input)
-            for lesson in derived_lessons:
-                analysis_parts.append(f"- {lesson}\n")
+        # ─── 模型4: 确认偏误回溯 ───
+        if any(kw in input_lower for kw in ["相信", "认为", "结论", "观点", "案例", "证据"]):
+            key_points.append("【确认偏误回溯】你是在分析历史，还是在选择性记忆来验证已有观点？")
+            analysis_parts.append(
+                "确认偏误回溯：人倾向于选择性地记住所验证自己观点的经历，忽略相反案例。\n"
+                "检验方法：\n"
+                "1. 主动问：「有没有反例？有没有失败案例？」\n"
+                "2. 列出这个经验的反例（如果找不到，可能是偏误）\n"
+                "3. 芒格的「达尔文协议」：等量时间寻找反面证据\n\n"
+                "真正从历史学习的标志是：你能同时说清楚支持的案例和反对的案例。"
+            )
 
-        analysis_parts.extend([
-            "### ✅ 基于经验的下一步行动\n",
-        ])
+        # ─── 模型5: 模式识别 vs 记住细节 ───
+        if any(kw in input_lower for kw in ["模式", "规律", "本质", "关键", "核心", "结构"]):
+            key_points.append("【模式识别】记住可复用的教训，不是记住所有细节")
+            analysis_parts.append(
+                "有效经验学习的标志是模式识别，不是记住所有细节。\n"
+                "应该提取：\n"
+                "• 这个情况下，什么原则/规律在起作用？\n"
+                "• 这个原则在什么条件下适用？什么条件下失效？\n"
+                "• 能用一句话总结这个教训吗？\n\n"
+                "记住细节但提取不了模式=无效学习。记住模式+知道适用条件=有效学习。"
+            )
 
-        for i, rec in enumerate(recommendations, 1):
-            analysis_parts.append(f"{i}. {rec}\n")
+        # ─── 历史案例调用 ───
+        memory_data = context.get("memory", [])
+        if memory_data and len(memory_data) > 0:
+            key_points.append(f"【记忆调用】发现 {len(memory_data)} 条相关历史记忆可参考")
+            analysis_parts.append(
+                "从记忆检索到的相关经历：\n"
+                + "\n".join([f"• {m.get('text', m)[:100]}" for m in memory_data[:3]])
+            )
 
-        analysis_parts.extend([
-            "---\n",
-            "### 💡 历史经验提醒\n",
-            "**成功的关键因素**: " + (similar_cases[0].get('success_factors', '见上述案例') if similar_cases else '无直接参考') + "\n",
-            "**需要避免的陷阱**: " + (similar_cases[0].get('pitfalls', '无明确记录') if similar_cases else '无明确记录') + "\n",
-        ])
-
-        analysis = "\n".join(analysis_parts)
+        if not key_points:
+            key_points.append("【达尔文扫描】尝试提及：经验/模式/成功案例/失败案例/进化/锚定等触发词")
 
         return PerspectiveOutput(
-            perspective_id="past_experience_result",
-            perspective_name="过往经历视角结果",
-            analysis=analysis,
-            confidence=0.7 if similar_cases else 0.4,
-            key_points=[f"类似案例: {len(similar_cases)}个", f"经验教训: {len(lessons)}条"],
-            warnings=[
-                "历史经验是宝贵的参考，但每个情况都有其独特性，不可机械照搬。",
-                "记忆可能不完整或带有偏差，建议结合其他视角交叉验证。",
-            ],
+            perspective_id=self.id,
+            perspective_name=self.name,
+            analysis="\n\n".join(analysis_parts) if analysis_parts else "从达尔文经验视角分析...",
+            key_points=key_points,
+            confidence=0.75,
+            tags=["经验学习", "达尔文", "认知偏误", "模式识别", "锚定效应", "历史类比"],
+            warnings=warnings,
             metadata={
-                "case_count": len(similar_cases),
-                "lesson_count": len(lessons),
-                "memory_source": memory_data.get("source", "context"),
+                "source": "达尔文进化论 + 认知心理学",
+                "mental_models": [
+                    "达尔文进化机制",
+                    "自然选择类比",
+                    "认知锚定警惕",
+                    "确认偏误回溯",
+                    "模式识别学习"
+                ],
+                "perspective_type": "experience_based"
             },
         )
-
-    def _extract_memory(self, context: dict) -> dict:
-        """从 context 中提取历史记忆数据."""
-        # 尝试从不同位置获取记忆数据
-        memory_keys = ["memory", "past_experiences", "history", "previous_cases", "lessons"]
-        for key in memory_keys:
-            if key in context:
-                return {"source": key, "data": context[key]}
-
-        # 尝试从 user_memory 中获取
-        if "user_memory" in context:
-            return {"source": "user_memory", "data": context["user_memory"]}
-
-        # 尝试从 conversation_history 中获取
-        if "conversation_history" in context:
-            return {"source": "conversation_history", "data": context["conversation_history"]}
-
-        return {"source": "none", "data": {}}
-
-    def _find_similar_cases(self, input: str, context: dict, memory_data: dict) -> list[dict]:
-        """在记忆中查找与当前问题类似的案例."""
-        cases = []
-        data = memory_data.get("data", {})
-
-        if isinstance(data, list):
-            # data 是一个案例列表
-            for case in data:
-                if self._is_similar(input, str(case)):
-                    cases.append(case if isinstance(case, dict) else {"summary": str(case)})
-        elif isinstance(data, dict):
-            # data 是一个字典，尝试提取 cases 字段
-            cases_list = data.get("cases", data.get("experiences", []))
-            for case in cases_list:
-                if self._is_similar(input, str(case)):
-                    cases.append(case if isinstance(case, dict) else {"summary": str(case)})
-
-        # 如果没有找到案例，生成一些基于输入推断的虚拟案例
-        if not cases:
-            # 检查输入中是否提到了具体的时间/事件
-            input_lower = input.lower()
-            if any(k in input_lower for k in ["工作", "职业", "offer"]):
-                cases.append({
-                    "summary": "职业选择相关经历",
-                    "when": "过去某次职业决策",
-                    "outcome": "参考性结果",
-                    "success_factors": "充分调研、理性分析、长远考量",
-                    "pitfalls": "过于保守或过于激进",
-                })
-            elif any(k in input_lower for k in ["创业", "项目", "产品"]):
-                cases.append({
-                    "summary": "创业/项目相关经历",
-                    "when": "过去某次创业尝试",
-                    "outcome": "参考性结果",
-                    "success_factors": "MVP验证、用户反馈、灵活调整",
-                    "pitfalls": "闭门造车、过度投入早期资源",
-                })
-
-        return cases[:3]  # 最多返回3个案例
-
-    def _is_similar(self, input: str, case_str: str) -> bool:
-        """判断案例是否与当前问题相似."""
-        input_keywords = set(input.lower().split())
-        case_keywords = set(case_str.lower().split())
-
-        # 计算关键词重叠
-        overlap = input_keywords & case_keywords
-
-        # 如果有2个以上关键词重叠，认为相似
-        significant_keywords = [k for k in overlap if len(k) > 2]
-        return len(significant_keywords) >= 2
-
-    def _extract_lessons(self, cases: list[dict], memory_data: dict) -> list[dict]:
-        """从案例中提取经验教训."""
-        lessons = []
-
-        for case in cases:
-            if isinstance(case, dict):
-                if "lesson" in case:
-                    lessons.append({
-                        "what": case["lesson"],
-                        "source": case.get("summary", "历史案例"),
-                        "applicability": case.get("lesson_applicability", ""),
-                    })
-                if "lessons" in case:
-                    for lesson in case["lessons"]:
-                        lessons.append({
-                            "what": lesson,
-                            "source": case.get("summary", "历史案例"),
-                            "applicability": "",
-                        })
-
-        return lessons
-
-    def _derive_lessons_from_input(self, input: str) -> list[str]:
-        """当没有直接案例时，从输入推导可能的教训."""
-        input_lower = input.lower()
-        lessons = []
-
-        if any(k in input_lower for k in ["决策", "选择", "应该"]):
-            lessons.append("做重大决策前，列出所有选项并评估每个的期望值")
-            lessons.append("咨询在该领域有直接经验的人，他们的教训最有价值")
-            lessons.append("给自己设定一个'冷静期'，避免冲动决策")
-
-        if any(k in input_lower for k in ["人际", "关系", "合作", "团队"]):
-            lessons.append("处理人际关系时，先理解对方的核心诉求再沟通")
-            lessons.append("建立信任需要时间，破坏信任只需要一次")
-
-        if any(k in input_lower for k in ["工作", "职业", "发展"]):
-            lessons.append("职业发展中最重要的是持续学习和展示成果")
-            lessons.append("选择比努力更重要，要定期评估方向是否正确")
-
-        if not lessons:
-            lessons.append("没有直接历史经验时，从相邻领域寻找类比经验")
-            lessons.append("将当前问题分解为已解决过的子问题，逐个攻克")
-
-        return lessons[:4]
-
-    def _generate_recommendations(self, input: str, cases: list[dict], lessons: list[dict]) -> list[str]:
-        """基于历史经验生成行动建议."""
-        recommendations = []
-
-        if cases:
-            # 有直接案例时的建议
-            recommendations.append("检索你过去的类似经历，找出那次决策的关键变量")
-            recommendations.append("在采取行动前，先在小范围内验证你的假设")
-            if any(c.get("outcome") == "成功" for c in cases):
-                recommendations.append("分析那次成功背后的关键因素，看是否能复制")
-            elif any(c.get("outcome") == "失败" for c in cases):
-                recommendations.append("那次失败的直接原因是什么？这次能否避免？")
-        else:
-            # 没有直接案例时的建议
-            recommendations.append("这个问题可能属于新领域，建议从相邻领域寻找类比经验")
-            recommendations.append("尝试将问题分解为已解决过的子问题")
-            recommendations.append("如果必须现在就行动，选择可逆的决策，给未来留出调整空间")
-
-        recommendations.append("记录这次的经历，为未来积累经验")
-
-        return recommendations[:5]

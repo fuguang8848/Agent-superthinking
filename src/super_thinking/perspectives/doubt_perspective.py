@@ -1,243 +1,145 @@
-"""Doubt Perspective - 怀疑质疑视角
-
-专门挑逻辑漏洞、假设漏洞、证据不足。
-触发关键词: 怀疑、质疑、真的吗、万一、不一定、可能错、漏洞、假设
-"""
+"""Doubt Perspective - 蒸馏自 alchaincyf/feynman-skill (Richard Feynman)"""
 
 from super_thinking.perspectives._interface import Perspective, PerspectiveOutput
 
 
 class DoubtPerspective(Perspective):
-    """怀疑质疑视角：专门挑逻辑漏洞、假设漏洞、证据不足."""
+    """
+    费曼怀疑质疑视角：知识边界、证伪精神、具象化思考。
+
+    核心心智模型：
+    1. 命名 ≠ 理解 - 知道叫什么和理解它是什么是两回事
+    2. 反自欺原则 - 你最容易被自己骗
+    3. 不确定性是力量 - 承认不知道比假装确定更有力量
+    4. 具象化思考 - 用具体、可感知的类比替代抽象概念
+    5. 深度游戏 - 跟着好奇心走，不预设「有用」或「没用」
+
+    蒸馏来源：alchaincyf/feynman-skill
+    触发词：怀疑、质疑、真的假的、怎么证明、什么意思、懂了吗、简化
+    """
 
     @property
     def id(self) -> str:
-        return "doubt_perspective"
+        return "doubt"
 
     @property
     def name(self) -> str:
-        return "怀疑质疑视角"
+        return "费曼怀疑视角"
 
     @property
     def description(self) -> str:
-        return "专门挑逻辑漏洞、假设漏洞、证据不足的分析视角。列出3-5个可能的疑点，质疑论证的薄弱环节。"
+        return (
+            "费曼怀疑思维：命名≠理解（能说名字≠真懂）、反自欺（自己最容易被骗）、"
+            "不确定性是力量（承认不知道比假装确定更有力量）、货物崇拜检测（空有形式缺内核）、"
+            "具象化检验（能不用术语解释吗？）。专挑假设漏洞、证据不足、伪深度。"
+        )
 
     @property
     def trigger_keywords(self) -> list[str]:
         return [
-            "怀疑", "质疑", "真的吗", "万一", "不一定", "可能错",
-            "漏洞", "假设", "有问题", "靠得住吗", "成立吗",
-            "凭什么", "证据呢", "论证", "前提", "逻辑",
+            "怀疑", "质疑", "真的吗", "怎么证明", "什么意思", "懂了吗",
+            "简化", "本质", "真正的原因", "证据", "自欺", "术语",
+            "命名", "理解", "抽象", "具象", "类比", "确定性",
+            "feynman", "费曼",
         ]
 
-    def think(self, input: str, context: dict) -> PerspectiveOutput:
-        """Execute doubt-based critical analysis."""
-        input_lower = input.lower()
+    def think(self, input_str: str, context: dict) -> PerspectiveOutput:
+        input_lower = input_str.lower()
+        key_points = []
+        warnings = []
+        analysis_parts = []
 
-        doubts = self._generate_doubts(input, input_lower)
-        logical_gaps = self._find_logical_gaps(input, input_lower)
-        evidence_issues = self._check_evidence_issues(input, input_lower)
-        alternative_explanations = self._find_alternatives(input, input_lower)
+        # ─── 模型1: 命名 ≠ 理解 ───
+        if any(kw in input_lower for kw in ["理解", "懂", "知道", "概念", "理论", "原理", "本质"]):
+            key_points.append("【命名≠理解】能说名字≠真懂。能用六年级水平解释吗？")
+            analysis_parts.append(
+                "知道一个东西叫什么，和理解它是什么、怎么运作，是完全不同的两件事。\n"
+                "检测问题：\n"
+                "• 我能不用任何术语解释这个吗？\n"
+                "• 换一种问法我还能回答吗？\n"
+                "• 能举一个具体的、可感知的例子吗？\n"
+                "如果回答不了，你只是记住了名字。"
+            )
 
-        analysis_parts = [
-            "## 🤔 怀疑质疑分析\n",
-            f"**被质疑的问题**: {input}\n",
-            "---\n",
-            "### 🔍 核心疑点（3-5个）\n",
-        ]
+        # ─── 模型2: 反自欺原则 ───
+        if any(kw in input_lower for kw in ["相我相信", "认为", "判断", "结论", "观点", "以为", "确定"]):
+            key_points.append("【反自欺】你最容易骗自己。有没有在选择性看证据？")
+            analysis_parts.append(
+                "人类最危险的认知陷阱不是被别人骗，而是被自己骗。\n"
+                "做任何判断前问自己：\n"
+                "• 我有没有在选择性地看证据？\n"
+                "• 我是因为证据才相信，还是因为我想相信？\n"
+                "• 我有没有把希望当成了事实？\n"
+                "• 如果有人要反驳我，他会用什么证据？"
+            )
+            warnings.append("自欺是最难察觉的偏误——你不会意识到自己在骗自己")
 
-        for i, doubt in enumerate(doubts, 1):
-            analysis_parts.append(f"{i}. **{doubt['point']}**")
-            analysis_parts.append(f"   疑点依据: {doubt['reason']}")
-            analysis_parts.append(f"   严重程度: {doubt['severity']}/5")
-            analysis_parts.append("")
+        # ─── 模型3: 不确定性是力量 ───
+        if any(kw in input_lower for kw in ["不确定", "不知道", "模糊", "复杂", "焦虑", "必须确定"]):
+            key_points.append("【不确定性】「不知道」不是终点，是探索的起点")
+            analysis_parts.append(
+                "费曼：「能在不确定中照样前进，比追求正确答案更有力量。」\n"
+                "两种态度的区分：\n"
+                "❌ 「需要确定答案才能行动」→ 导致自欺或决策瘫痪\n"
+                "✅ 「在不确定中照样前进」→ 保持探索和学习的开放性\n"
+                "对无法证明的事情保持开放，比假装确定更有智慧。"
+            )
 
-        analysis_parts.extend([
-            "### 🕳️ 逻辑漏洞\n",
-        ])
-        for gap in logical_gaps:
-            analysis_parts.append(f"- **{gap['type']}**: {gap['description']}")
-            analysis_parts.append(f"  反驳: {gap['counter']}\n")
+        # ─── 模型4: 货物崇拜检测 ───
+        if any(kw in input_lower for kw in ["方法", "流程", "体系", "框架", "系统", "专业", "标准"]):
+            key_points.append("【货物崇拜检测】空有形式缺内核——飞机不会降落")
+            analysis_parts.append(
+                "货物崇拜：有科学/专业的所有外在形式，但缺少核心精神。\n"
+                "检测场景：\n"
+                "• 团队做了所有敏捷流程但产品没变好 → 货物崇拜敏捷\n"
+                "• 写了完美报告但没验证假设 → 货物崇拜研究\n"
+                "• 用了所有最新工具但效率没提升 → 货物崇拜技术\n"
+                "问：这里有真正的核心精神，还是只有外表形式？"
+            )
 
-        analysis_parts.extend([
-            "### ⚠️ 证据问题\n",
-        ])
-        for issue in evidence_issues:
-            analysis_parts.append(f"- {issue}\n")
+        # ─── 模型5: 具象化思考 ───
+        if any(kw in input_lower for kw in ["抽象", "复杂", "理论", "解释", "概念"]):
+            key_points.append("【具象化】这个东西在物理世界里长什么样？能画出来吗？")
+            analysis_parts.append(
+                "费曼的具象化策略：\n"
+                "1. 找到一个日常生活每个人都经历过的场景\n"
+                "2. 把抽象概念映射到这个场景上\n"
+                "3. 检验映射是否保留了关键特征\n"
+                "注意：不是所有概念都适合具象化。知道什么时候不该类比，和知道什么时候该类比一样重要。"
+            )
 
-        analysis_parts.extend([
-            "### 💡 替代解释\n",
-        ])
-        for alt in alternative_explanations:
-            analysis_parts.append(f"- {alt}\n")
+        # ─── 证伪检验 ───
+        if any(kw in input_lower for kw in ["证明", "证实", "证据", "真的", "假的", "事实"]):
+            key_points.append("【证伪检验】什么证据能推翻这个结论？找不到=没验证")
+            analysis_parts.append(
+                "卡尔·萨根：「非凡结论需要非凡证据。」\n"
+                "分析任何声称时，主动问：\n"
+                "• 什么条件下这个结论会是错的？\n"
+                "• 有人做过可证伪的检验吗？\n"
+                "• 证据是相关还是因果？"
+            )
 
-        analysis_parts.extend([
-            "---\n",
-            "### 🎯 质疑总结\n",
-            f"**最需关注的疑点**: {doubts[0]['point'] if doubts else '无'}\n",
-            "**建议**: 在接受结论之前，必须先解决最严重的疑点。",
-        ])
-
-        analysis = "\n".join(analysis_parts)
+        if not key_points:
+            key_points.append("【费曼检验】尝试提及：理解/证据/怀疑/证明/抽象/货物崇拜等触发词")
 
         return PerspectiveOutput(
-            perspective_id="doubt_result",
-            perspective_name="怀疑质疑结果",
-            analysis=analysis,
-            confidence=0.75,
-            key_points=[d["point"] for d in doubts],
-            warnings=[
-                "怀疑视角不是为了否定而否定，而是指出需要更多证据支撑的地方。",
-                "列出的疑点不代表结论是错的，只是需要更严格的验证。",
-            ],
+            perspective_id=self.id,
+            perspective_name=self.name,
+            analysis="\n\n".join(analysis_parts) if analysis_parts else "从费曼怀疑视角分析...",
+            key_points=key_points,
+            confidence=0.8,
+            tags=["怀疑", "费曼", "证伪", "具象化", "反自欺", "货物崇拜"],
+            warnings=warnings,
             metadata={
-                "doubt_count": len(doubts),
-                "gap_count": len(logical_gaps),
-                "most_severe": doubts[0]["point"] if doubts else None,
+                "source": "https://github.com/alchaincyf/feynman-skill",
+                "mental_models": [
+                    "命名≠理解",
+                    "反自欺原则",
+                    "不确定性是力量",
+                    "货物崇拜检测",
+                    "具象化思考",
+                    "证伪精神"
+                ],
+                "perspective_type": "skepticism"
             },
         )
-
-    def _generate_doubts(self, input: str, input_lower: str) -> list[dict]:
-        """Generate 3-5 doubt points based on input analysis."""
-        doubts = []
-
-        # Check for absolute language
-        if any(k in input for k in ["一定", "必然", "肯定", "绝对", "必须", "必然"]):
-            doubts.append({
-                "point": "使用了绝对化表述",
-                "reason": "绝对化语言（'一定'、'必然'、'肯定'）通常暗示论证过于自信，忽略了概率性和例外情况。",
-                "severity": 4,
-            })
-
-        # Check for correlation vs causation
-        if any(k in input_lower for k in ["因为", "导致", "引起", "造成", "因此"]):
-            doubts.append({
-                "point": "因果关系未经验证",
-                "reason": "相关性不等于因果性。A和B同时出现，不代表A导致B。可能存在共同原因或反向因果。",
-                "severity": 5,
-            })
-
-        # Check for missing alternatives
-        if any(k in input_lower for k in ["只能", "只有", "必须", "最好的", "最优"]):
-            doubts.append({
-                "point": "可能存在被忽略的替代方案",
-                "reason": "在声称某方案是'唯一'或'最好'之前，应该系统性地列举和评估所有替代选项。",
-                "severity": 3,
-            })
-
-        # Check for appeal to authority
-        if any(k in input_lower for k in ["专家说", "研究表明", "数据显示", "证明", "权威"]):
-            doubts.append({
-                "point": "权威引用需核实来源和语境",
-                "reason": "'专家说'或'研究表明'可能断章取义，需要核实原始来源、样本量、研究条件等。",
-                "severity": 3,
-            })
-
-        # Check for future predictions
-        if any(k in input_lower for k in ["将会", "会", "未来", "以后", "预期", "估计"]):
-            doubts.append({
-                "point": "未来预测存在高度不确定性",
-                "reason": "任何涉及未来事件的预测都有不确定性区间，'将会'这种确定性表述需要警惕。",
-                "severity": 4,
-            })
-
-        # Check for missing base rate
-        if any(k in input_lower for k in ["很多", "大多数", "少数", "部分", "一些"]):
-            doubts.append({
-                "point": "模糊的比例表述缺乏精确性",
-                "reason": "'很多'、'少数'等表述没有给出具体数字，需要核实实际比例和基数。",
-                "severity": 2,
-            })
-
-        # Default doubts if none triggered
-        if not doubts:
-            doubts = [
-                {
-                    "point": "这个结论依赖的前提是否成立？",
-                    "reason": "大多数论证都建立在某些前提之上，这些前提本身是否可靠需要审查。",
-                    "severity": 3,
-                },
-                {
-                    "point": "论证过程中是否有跳跃的逻辑环节？",
-                    "reason": "有时论证会跳过某些步骤，直接从前提跳到结论，这些跳过的步骤可能就是漏洞。",
-                    "severity": 3,
-                },
-                {
-                    "point": "是否有被刻意忽略的反面证据？",
-                    "reason": "确认偏误会让人倾向于忽略不支持自己观点的证据，这也是一个常见的论证漏洞。",
-                    "severity": 4,
-                },
-            ]
-
-        return doubts[:5]
-
-    def _find_logical_gaps(self, input: str, input_lower: str) -> list[dict]:
-        """Identify logical gaps in the argument."""
-        gaps = []
-
-        if any(k in input_lower for k in ["因为", "所以", "因此", "导致"]):
-            gaps.append({
-                "type": "因果跳跃",
-                "description": "从'因为A'到'所以B'之间可能存在逻辑跳跃",
-                "counter": "需要补充因果链条：A是如何具体导致B的？是否有中介变量？",
-            })
-
-        if any(k in input_lower for k in ["所有", "一切", "每个", "全部"]):
-            gaps.append({
-                "type": "过度泛化",
-                "description": "使用全称量词（所有、每个）但证据可能只来自部分样本",
-                "counter": "是否存在反例？样本量和代表性是否足够？",
-            })
-
-        if any(k in input_lower for k in ["以前", "过去", "历史"]):
-            gaps.append({
-                "type": "历史类比谬误",
-                "description": "用过去的情况类比现在，但条件可能已发生变化",
-                "counter": "过去和现在的关键条件有哪些不同？类比是否恰当？",
-            })
-
-        if any(k in input_lower for k in ["直觉", "感觉", "认为", "觉得"]):
-            gaps.append({
-                "type": "直觉谬误",
-                "description": "依赖直觉而非系统分析，可能受到可得性启发等认知偏差影响",
-                "counter": "直觉背后是否有数据和逻辑支撑？是否做了系统性分析？",
-            })
-
-        if not gaps:
-            gaps.append({
-                "type": "潜在假设未声明",
-                "description": "论证过程中可能隐含了某些未明确声明的假设",
-                "counter": "列出论证成立所依赖的所有假设，并逐一检验它们是否成立。",
-            })
-
-        return gaps[:4]
-
-    def _check_evidence_issues(self, input: str, input_lower: str) -> list[str]:
-        """Check for evidence-related problems."""
-        issues = []
-
-        if any(k in input_lower for k in ["据说", "听说", "有人说", "传言"]):
-            issues.append("⚠️ 消息来源不明或未经核实（据说/听说）")
-
-        if any(k in input_lower for k in ["可能", "也许", "大概", "或许"]):
-            issues.append("⚠️ 使用了模糊的概率表述，结论的确定性被高估")
-
-        if not any(k in input_lower for k in ["数据", "研究", "证据", "统计", "实验", "调查"]):
-            issues.append("⚠️ 缺乏具体数据或研究支撑，多为主观论述")
-
-        if len(input) < 30:
-            issues.append("⚠️ 输入信息量过少，难以进行充分的证据核查")
-
-        if not issues:
-            issues.append("✓ 初步检查未发现明显的证据缺失问题（但仍需深入核查）")
-
-        return issues
-
-    def _find_alternatives(self, input: str, input_lower: str) -> list[str]:
-        """Find alternative explanations or perspectives."""
-        alternatives = [
-            "另一种可能是[某个被忽略的因素]在起作用，而不是你主要考虑的原因。",
-            "这个现象可能有多重解释，需要更细粒度的分析才能区分。",
-            "将问题框架从'如何做到'改为'为什么要做'，可能揭示不同视角。",
-        ]
-        return alternatives
