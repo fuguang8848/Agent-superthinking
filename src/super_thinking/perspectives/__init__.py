@@ -8,6 +8,10 @@ from super_thinking.perspectives.verification import VerificationPerspective
 from super_thinking.perspectives.tagmemo_perspective import TagmemoPerspective
 from super_thinking.perspectives.msa_perspective import MsaPerspective
 from super_thinking.perspectives.vcp_perspective import VcpPerspective
+from super_thinking.perspectives.doubt_perspective import DoubtPerspective
+from super_thinking.perspectives.stakeholder_perspective import StakeholderPerspective
+from super_thinking.perspectives.risk_detail_perspective import RiskDetailPerspective
+from super_thinking.perspectives.past_experience_perspective import PastExperiencePerspective
 
 ALL_PERSPECTIVES = [
     MaoPerspective,
@@ -17,6 +21,10 @@ ALL_PERSPECTIVES = [
     TagmemoPerspective,
     MsaPerspective,
     VcpPerspective,
+    DoubtPerspective,
+    StakeholderPerspective,
+    RiskDetailPerspective,
+    PastExperiencePerspective,
 ]
 
 __all__ = [
@@ -29,5 +37,9 @@ __all__ = [
     "TagmemoPerspective",
     "MsaPerspective",
     "VcpPerspective",
+    "DoubtPerspective",
+    "StakeholderPerspective",
+    "RiskDetailPerspective",
+    "PastExperiencePerspective",
     "ALL_PERSPECTIVES",
 ]
