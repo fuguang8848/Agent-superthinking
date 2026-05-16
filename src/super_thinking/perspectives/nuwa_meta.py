@@ -191,6 +191,50 @@ class PerspectiveGenerator:
         # 生成核心分析方法
         analysis_template = self._generate_analysis_template(spec, type_metadata)
 
+        # 预绑定分析函数（避免 lambda 延迟绑定问题）
+        def _make_analyze_fn(type_id, name):
+            def analyze_fn(input_str):
+                if type_id == "decision":
+                    return [
+                        "识别决策的核心变量",
+                        "列出所有可行选项",
+                        "评估每个选项的期望值",
+                        "考虑最坏情况的容错边界",
+                    ]
+                elif type_id == "risk":
+                    return [
+                        "识别潜在威胁来源",
+                        "评估每个威胁的概率和影响",
+                        "检查尾部风险（黑天鹅）",
+                        "建议风险缓解策略",
+                    ]
+                elif type_id == "emotion":
+                    return [
+                        "识别当前情绪状态",
+                        "检查可能的认知偏差",
+                        "追溯情绪背后的核心需求",
+                        "建议认知重构方向",
+                    ]
+                elif type_id == "business":
+                    return [
+                        "定义目标用户和需求",
+                        "分析竞争格局和壁垒",
+                        "验证商业模式可行性",
+                        "评估单位经济模型",
+                    ]
+                elif type_id == "creativity":
+                    return [
+                        "打破现有假设和边界",
+                        "寻找跨领域的类比",
+                        "用第一性原理追问",
+                        "构建突破性假设",
+                    ]
+                else:
+                    return [f"从【{name}】视角分析：{input_str[:50]}..."]
+            return analyze_fn
+
+        _analyze_fn = _make_analyze_fn(spec.type_id, spec.name)
+
         # 生成类定义
         GeneratedClass = type(
             class_name,
@@ -200,49 +244,24 @@ class PerspectiveGenerator:
                 "name": spec.name,
                 "description": spec.description,
                 "trigger_keywords": spec.trigger_keywords,
-                "think": lambda self, input_str, context: self._think_impl(input_str, context, spec, analysis_template),
-                "_spec": spec,
-                "_analysis_template": analysis_template,
             },
         )
 
-        # 添加实例方法
-        def _think_impl(self, input_str: str, context: dict, spec: GeneratedPerspectiveSpec, template: str) -> PerspectiveOutput:
-            """实际的 think 方法实现。"""
-            input_lower = input_str.lower()
-
-            # 分析输入
-            key_points = []
-            confidence = 0.6
-
-            # 根据类型添加特定分析
-            if spec.type_id == "decision":
-                key_points = self._analyze_decision(input_str)
-            elif spec.type_id == "risk":
-                key_points = self._analyze_risk(input_str)
-            elif spec.type_id == "emotion":
-                key_points = self._analyze_emotion(input_str)
-            elif spec.type_id == "business":
-                key_points = self._analyze_business(input_str)
-            elif spec.type_id == "creativity":
-                key_points = self._analyze_creativity(input_str)
-            else:
-                key_points = [f"从【{spec.name}】视角分析：{input_str[:50]}..."]
-
+        # think 方法直接定义为类方法（捕获 spec 和 analysis_template）
+        def think(self, input_str: str, context: dict) -> PerspectiveOutput:
+            key_points = _analyze_fn(input_str)
             return PerspectiveOutput(
                 perspective_id=self.id,
                 perspective_name=self.name,
-                analysis=template.format(question=input_str, perspective=spec.name),
+                analysis=analysis_template.format(question=input_str, perspective=spec.name),
                 key_points=key_points,
-                confidence=confidence,
+                confidence=0.6,
                 tags=[spec.type_id, "generated"],
                 warnings=[f"自动生成的视角 [{spec.name}]，建议验证分析质量"],
                 metadata={"generated": True, "spec_type": spec.type_id},
             )
 
-        # Bind方法
-        GeneratedClass._think_impl = _think_impl
-        GeneratedClass.think = lambda self, input_str, context: self._think_impl(input_str, context, spec, analysis_template)
+        GeneratedClass.think = think
 
         self._generated_classes[spec.type_id] = GeneratedClass
         return GeneratedClass
@@ -370,8 +389,8 @@ class NuwaMetaPerspective(Perspective):
             needed_types, existing_coverage, input
         )
 
-        # 构建输出
-        return self._build_output(input, needed_types, existing_coverage, recommendation)
+        # 构建输出（传入 context 以便新视角调用）
+        return self._build_output(input, needed_types, existing_coverage, recommendation, context)
 
     def _diagnose_needs(self, input_lower: str) -> list[PerspectiveType]:
         """
@@ -479,6 +498,7 @@ class NuwaMetaPerspective(Perspective):
         needed_types: list[PerspectiveType],
         coverage: dict[str, bool],
         recommendation: dict,
+        context: dict,
     ) -> PerspectiveOutput:
         """构建女娲的分析输出。"""
 
@@ -546,7 +566,10 @@ class NuwaMetaPerspective(Perspective):
 
         # 新视角生成
         if recommendation["new_perspectives_needed"]:
-            analysis_parts.append("**🔧 准备生成新视角**：")
+            # 生成并实际调用新视角的 think()，返回其分析结果
+            first_generated_output: Optional[PerspectiveOutput] = None
+            first_ntype: Optional[PerspectiveType] = None
+
             for ntype in recommendation["new_perspectives_needed"]:
                 # 生成新视角
                 spec = GeneratedPerspectiveSpec(
@@ -560,19 +583,41 @@ class NuwaMetaPerspective(Perspective):
 
                 generated_class = self.generator.generate(spec)
                 instance = generated_class()
-                analysis_parts.append(f"  → **{instance.name}** (ID: `{instance.id}`)")
-                analysis_parts.append(f"     描述: {instance.description}")
 
                 # 尝试注册到 registry
                 try:
                     from super_thinking.core.registry import get_registry
                     reg = get_registry()
                     reg.register(instance)
-                    analysis_parts.append(f"     ✅ 已注册到 Registry")
-                except Exception as e:
-                    analysis_parts.append(f"     ⚠️ 注册失败: {str(e)}")
+                except Exception:
+                    pass  # 注册失败不影响分析执行
 
-                analysis_parts.append("")
+                # 实际调用 think() 获取分析结果
+                try:
+                    generated_output = instance.think(input_str, context)
+                    if first_generated_output is None:
+                        first_generated_output = generated_output
+                        first_ntype = ntype
+                except Exception as e:
+                    # 如果 think() 失败，记录到诊断报告中继续
+                    analysis_parts.append(f"⚠️ 视角 [{ntype.name}] 执行失败: {str(e)}")
+
+            # 如果成功生成了分析结果，直接返回新视角的分析
+            if first_generated_output is not None:
+                # 在元数据中附加女娲的诊断信息
+                first_generated_output.metadata["nuwa_diagnosis"] = {
+                    "needed_types": [t.id for t in needed_types],
+                    "coverage": coverage,
+                    "generated_from": [t.id for t in recommendation["new_perspectives_needed"]],
+                }
+                first_generated_output.warnings = first_generated_output.warnings or []
+                first_generated_output.warnings.append(
+                    f"⚠️ 此分析由女娲自动生成的视角 [{first_ntype.name}] 提供，未经人工验证"
+                )
+                return first_generated_output
+
+            # 如果所有生成都失败，fallback 到诊断报告
+            analysis_parts.append("⚠️ 所有新视角生成均失败，显示诊断报告：")
 
         analysis_parts.extend([
             "---",
