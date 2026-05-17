@@ -1,0 +1,35 @@
+[project]
+name = "super-thinking"
+version = "0.1.0"
+description = "Jury of Experts thinking system - multi-perspective analysis framework"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Super Thinking Team"}
+]
+keywords = ["thinking", "analysis", "perspective", "expert", "jury"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.optional-dependencies]
+openclaw = []  # OpenClaw integration hooks
+langchain = ["langchain>=0.1.0"]  # LangChain adapter
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/super_thinking"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
