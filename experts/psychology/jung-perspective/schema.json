@@ -1,0 +1,29 @@
+{
+  "name": "jung-perspective",
+  "type": "methods",
+  "domain": "jung",
+  "displayName": "jung",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**实证支持有限**：原型和集体无意识的概念难以通过实验验证，更多是哲学假设",
+    "**解释的主观性**：解梦和原型分析高度依赖分析师的主观判断，不同分析师可能给出截然不同的解释",
+    "**西方男性视角**：荣格的理论基于西方男性患者推导，对女性、非西方人的适用性有局限",
+    "**与宗教/神秘主义的边界模糊**：荣格后期大量涉入神秘主义领域，某些\"原型\"解释可能只是文化神话而非普遍心理结构",
+    "**MBTI的简化**：商业化的MBTI测试丢失了荣格类型学的复杂性和动态性"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "jung-perspective"
+  },
+  "version": "1.0.0"
+}

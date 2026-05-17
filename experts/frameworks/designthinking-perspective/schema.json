@@ -1,0 +1,23 @@
+{
+  "name": "designthinking-perspective",
+  "type": "methods",
+  "domain": "designthinking",
+  "displayName": "designthinking",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "designthinking-perspective"
+  },
+  "version": "1.0.0"
+}

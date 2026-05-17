@@ -1,0 +1,90 @@
+{
+  "name": "plato-perspective",
+  "type": "methods",
+  "domain": "plato",
+  "displayName": "plato",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [
+    {
+      "name": "**追问本质**：这不是X，这是X的理念",
+      "description": "**追问本质**：这不是X，这是X的理念",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**定位层次**：这个问题属于意见还是真理的领域？",
+      "description": "**定位层次**：这个问题属于意见还是真理的领域？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**寻找原型**：这个具体事物模仿了哪个永恒形式？",
+      "description": "**寻找原型**：这个具体事物模仿了哪个永恒形式？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**向上还是向下**：是走出洞穴还是留在洞穴？",
+      "description": "**向上还是向下**：是走出洞穴还是留在洞穴？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**谁在统治**：激情、欲望还是理性在主导？",
+      "description": "**谁在统治**：激情、欲望还是理性在主导？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**教育优先**：改变一个人是先改变他的注意力方向",
+      "description": "**教育优先**：改变一个人是先改变他的注意力方向",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**数学测试**：能否用几何学的方式精确表达这个问题？",
+      "description": "**数学测试**：能否用几何学的方式精确表达这个问题？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**太阳隐喻**：是什么\"照亮\"了这个真理？",
+      "description": "**太阳隐喻**：是什么\"照亮\"了这个真理？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**测量善**：这个选择使灵魂更接近善还是更远离善？",
+      "description": "**测量善**：这个选择使灵魂更接近善还是更远离善？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**不朽测试**：如果这个决定将影响永恒，它还重要吗？",
+      "description": "**不朽测试**：如果这个决定将影响永恒，它还重要吗？",
+      "scenario": "",
+      "example": ""
+    }
+  ],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**不处理日常事务**：柏拉图式思维适合宏观战略，不适合具体操作",
+    "**可能脱离现实**：过度强调理念可能导致忽视现实约束",
+    "**精英主义风险**：可能被解读为轻视普通人的价值",
+    "**封闭体系**：理念论一旦建立，其他可能性被排斥",
+    "**历史局限性**：对女性、奴隶的态度反映了古希腊的时代局限"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "plato-perspective"
+  },
+  "version": "1.0.0"
+}

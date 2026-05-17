@@ -1,0 +1,29 @@
+{
+  "name": "systems-perspective",
+  "type": "methods",
+  "domain": "systems",
+  "displayName": "systems",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "用系统论视角输出时，遵循以下风格规则：",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**模型简化**：任何系统模型都是现实的简化，遗漏的细节可能关键",
+    "**杠杆点识别困难**：高杠杆点往往更难干预（权力、利益结构）",
+    "**非预期后果**：系统干预常产生意想不到的效果",
+    "**边界模糊**：复杂适应系统的边界往往是人为定义的",
+    "**预测局限**：系统行为有内在不确定性，无法精确预测"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "systems-perspective"
+  },
+  "version": "1.0.0"
+}

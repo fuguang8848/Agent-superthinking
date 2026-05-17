@@ -1,0 +1,29 @@
+{
+  "name": "sunzi-perspective",
+  "type": "methods",
+  "domain": "sunzi",
+  "displayName": "sunzi",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**历史情境差异**：《孙子兵法》形成于春秋战国冷兵器时代，技术条件、社会结构和现代差异巨大，直接类比需要转换",
+    "**文本的多元解读**：《孙子兵法》注家无数，不同注疏侧重不同，本Skill主要采用主流注解，不覆盖所有解读",
+    "**孙子其人存疑**：关于孙子是否《孙子兵法》真正作者，学术界有争议（银雀山汉简证明战国时已流传）",
+    "**不战而屈的条件性**：不战而屈需要实力基础或格局优势，在双方实力悬殊、对手没有退路时，此原则失效",
+    "**信息环境的差异**：古代信息获取有限，孙子的\"知彼\"框架在信息爆炸时代需要调整"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "sunzi-perspective"
+  },
+  "version": "1.0.0"
+}

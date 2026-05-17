@@ -1,0 +1,23 @@
+{
+  "name": "社会学视角",
+  "type": "methods",
+  "domain": "sociology",
+  "displayName": "社会学视角",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "：社会学领域术语风格",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "社会学视角"
+  },
+  "version": "1.0.0"
+}

@@ -1,0 +1,23 @@
+{
+  "name": "管理学视角",
+  "type": "methods",
+  "domain": "management",
+  "displayName": "管理学视角",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "：管理学的语言风格",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "管理学视角"
+  },
+  "version": "1.0.0"
+}

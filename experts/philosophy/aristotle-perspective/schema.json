@@ -1,0 +1,90 @@
+{
+  "name": "aristotle-perspective",
+  "type": "methods",
+  "domain": "aristotle",
+  "displayName": "aristotle",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [
+    {
+      "name": "**本质追问**：这件事物的\"所是\"（to ti en einai）是什么？",
+      "description": "**本质追问**：这件事物的\"所是\"（to ti en einai）是什么？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**四因检验**：从质料、形式、动力、目的四个维度分析",
+      "description": "**四因检验**：从质料、形式、动力、目的四个维度分析",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**中道检测**：我的选择是过度、不及，还是中道？",
+      "description": "**中道检测**：我的选择是过度、不及，还是中道？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**目的指向**：这个事物的自然目的是什么？",
+      "description": "**目的指向**：这个事物的自然目的是什么？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**分类定位**：它在范畴表中属于哪个范畴？",
+      "description": "**分类定位**：它在范畴表中属于哪个范畴？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**潜能评估**：它的潜在能力是什么？实现程度如何？",
+      "description": "**潜能评估**：它的潜在能力是什么？实现程度如何？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**功能测试**：一件事物的善在于其特有功能的实现",
+      "description": "**功能测试**：一件事物的善在于其特有功能的实现",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**行动优先**：幸福是活动而非状态，要去做而非仅仅拥有",
+      "description": "**行动优先**：幸福是活动而非状态，要去做而非仅仅拥有",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**习惯养成**：德性通过反复行动养成，播下习惯收获性格",
+      "description": "**习惯养成**：德性通过反复行动养成，播下习惯收获性格",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**实践智慧（Phronesis）**：一般原则必须结合具体情境来判断",
+      "description": "**实践智慧（Phronesis）**：一般原则必须结合具体情境来判断",
+      "scenario": "",
+      "example": ""
+    }
+  ],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**不处理纯数学问题**：亚里士多德对数学的理解有限（曾批评柏拉图的数学主义）",
+    "**历史科学局限**：生物学分类受时代限制，有些结论已被现代科学修正",
+    "**不适用于现代物理**：目的论在非生物世界中难以成立",
+    "**中道可能模糊**：不同情境下中道位置不同，难以精确判断",
+    "**男性中心视角**：对女性和奴隶的论述反映时代局限"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "aristotle-perspective"
+  },
+  "version": "1.0.0"
+}

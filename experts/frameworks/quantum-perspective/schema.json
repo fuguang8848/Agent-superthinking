@@ -1,0 +1,23 @@
+{
+  "name": "quantum-perspective",
+  "type": "methods",
+  "domain": "quantum",
+  "displayName": "quantum",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "quantum-perspective"
+  },
+  "version": "1.0.0"
+}

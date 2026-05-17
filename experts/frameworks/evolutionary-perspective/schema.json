@@ -1,0 +1,29 @@
+{
+  "name": "evolutionary-perspective",
+  "type": "methods",
+  "domain": "evolutionary",
+  "displayName": "evolutionary",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "用演化视角输出时，遵循以下风格规则：",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**适应论者谬误**：并非所有特征都是适应器。并非所有行为都有「演化原因」",
+    "**事后解释风险**：演化假说容易被事后合理化（just-so stories）",
+    "**祖先环境重建困难**：我们无法直接观察祖先环境",
+    "**基因-文化交互**：人类行为不能简单还原为演化逻辑",
+    "**过度泛化**：将特定物种发现推广到人类需要谨慎"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "evolutionary-perspective"
+  },
+  "version": "1.0.0"
+}

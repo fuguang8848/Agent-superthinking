@@ -1,0 +1,29 @@
+{
+  "name": "bayesian-perspective",
+  "type": "methods",
+  "domain": "bayesian",
+  "displayName": "bayesian",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "用贝叶斯视角输出时，遵循以下风格规则：",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**先验主观性**：贝叶斯分析的结论受先验选择影响。不同先验可以得出不同后验",
+    "**计算复杂性**：复杂模型的贝叶斯推断需要MCMC等数值方法，计算成本高",
+    "**模型假设**：贝叶斯推断仍然依赖模型假设（分布假设、条件独立性等）",
+    "**因果推断限制**：从观测数据推断因果关系需要无法从数据本身验证的因果假设",
+    "**频率派互补性**：在某些场景下（如大样本假设检验），频率派方法仍然有其价值"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "bayesian-perspective"
+  },
+  "version": "1.0.0"
+}

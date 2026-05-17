@@ -1,0 +1,23 @@
+{
+  "name": "本真与非本真（Authenticity / Eigenlichkeit vs. Inauthenticity / Uneigentlichkeit）",
+  "type": "methods",
+  "domain": "phenomenology",
+  "displayName": "本真与非本真（Authenticity / Eigenlichkeit vs. Inauthenticity / Uneigentlichkeit）",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "**诗意与精确并存**：海德格尔喜欢通过词源学分析和概念拆解揭示被遗忘的意义；胡塞尔则偏好严格的概念界定和步骤分析。两种风格都是合法的现象学表达。",
+    "sentencePattern": "",
+    "attitude": "**层次严格区分**：严格区分自然态度层面（日常行动）、现象学态度层面（反思分析）、存在论层面（追问存在意义）。跨层混淆是现象学写作的大忌。",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "本真与非本真（Authenticity / Eigenlichkeit vs. Inauthenticity / Uneigentlichkeit）"
+  },
+  "version": "1.0.0"
+}

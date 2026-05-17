@@ -78,12 +78,102 @@
 
 ---
 
+## 跨框架兼容性
+
+### 三种格式支持
+
+| 格式 | 文件 | 用途 |
+|------|------|------|
+| **SKILL.md** | `experts/*/SKILL.md` | OpenClaw Skill 直接使用 |
+| **schema.json** | `experts/*/schema.json` | 任何框架 JSON 解析即用 |
+| **INDEX** | `INDEX_PEOPLE.md`, `INDEX_METHODS.md` | 路由层索引 |
+
+### JSON Schema（通用格式）
+
+每个专家同时生成 `schema.json`，任何 AI 框架都能解析：
+
+```json
+{
+  "name": "socrates-perspective",
+  "type": "people",
+  "domain": "philosophy",
+  "displayName": "苏格拉底",
+  "keywords": ["苏格拉底", "辩证法", "自知无知"],
+  "models": [...],
+  "heuristics": [...],
+  "dna": {...},
+  "limits": [...],
+  "source": {...},
+  "version": "1.0.0"
+}
+```
+
+详细 Schema 定义见 [SCHEMA.md](./SCHEMA.md)
+
+### 框架适配示例
+
+#### OpenClaw（原生支持）
+```markdown
+> 帮我分析：AI会不会取代人类？
+```
+
+#### LangChain
+```python
+from langchain.tools import Tool
+import json
+
+# 加载任意专家
+with open("experts/gametheory-perspective/schema.json") as f:
+    expert = json.load(f)
+
+tool = Tool(
+    name=expert["displayName"],
+    func=lambda x: analyze_with_expert(x, expert),
+    description=f"Use {expert['displayName']} perspective"
+)
+```
+
+#### LlamaIndex
+```python
+from llama_index.tools import FunctionTool
+import json
+
+with open("experts/bayesian-perspective/schema.json") as f:
+    schema = json.load(f)
+
+tool = FunctionTool.from_defaults(
+    fn=analyze_bayesian,
+    name=schema["name"],
+    description=f"Bayesian reasoning tool"
+)
+```
+
+#### Claude Code
+```bash
+# 读取专家 JSON
+cat experts/socrates-perspective/schema.json | jq '.models[]'
+```
+
+#### 自定义 Agent
+```python
+import json
+
+def load_expert(name: str):
+    with open(f"experts/{name}/schema.json") as f:
+        return json.load(f)
+
+socrates = load_expert("socrates-perspective")
+for model in socrates["models"]:
+    print(f"{model['name']}: {model['summary']}")
+```
+
+---
+
 ## AI 框架集成
 
 ### 方式一：OpenClaw Skill（推荐）
 
 ```markdown
-# 在 OpenClaw 中使用
 > 帮我分析：AI会不会取代人类？
 
 [路由器展示路由结果]
@@ -121,25 +211,19 @@ results = [expert.analyze(question) for expert in experts]
 
 # 4. 融合报告
 report = fusion.fuse(results)
-
 print(report)
 ```
 
-### 方式三：直接引用专家 SKILL.md
+### 方式三：JSON Schema（任意框架）
 
 ```python
-# 直接加载任意专家
-from super_thinking import Expert
+import json
+from pathlib import Path
 
-socrates = Expert.from_file("experts/people/philosophy/socrates-perspective/SKILL.md")
-nietzsche = Expert.from_file("experts/people/philosophy/nietzsche-perspective/SKILL.md")
-gametheory = Expert.from_file("experts/methods/gametheory-perspective/SKILL.md")
-
-# 分析
-question = "创业是否应该冒险？"
-socrates.analyze(question)
-nietzsche.analyze(question)
-gametheory.analyze(question)
+# 遍历所有专家
+for schema_path in Path("experts").rglob("schema.json"):
+    expert = json.loads(schema_path.read_text())
+    print(f"{expert['displayName']}: {len(expert['models'])} models")
 ```
 
 ---
@@ -151,37 +235,41 @@ Agent-superthinking/
 ├── SKILL.md                    # OpenClaw Skill 入口
 ├── INDEX_PEOPLE.md            # 人物索引（路由层读取）
 ├── INDEX_METHODS.md            # 方法论索引（路由层读取）
+├── SCHEMA.md                  # JSON Schema 定义
 ├── README.md                  # 本文件
 ├── LICENSE                    # MIT
 ├── pyproject.toml             # Python 包配置
+├── scripts/
+│   └── sketch_to_json.py     # SKILL.md → JSON 转换脚本
 ├── src/super_thinking/        # Python 包源码
 │   ├── __init__.py
 │   ├── core/
 │   │   ├── router.py         # 路由层
-│   │   ├── registry.py       # 专家注册
-│   │   └── jury.py           # 评审层
+│   │   ├── registry.py        # 专家注册
+│   │   └── jury.py            # 评审层
 │   ├── fusion/
-│   │   ├── conflict.py       # 冲突检测
-│   │   ├── consensus.py      # 共识提炼
-│   │   └── formatter.py      # 报告格式化
-│   └── experts/              # 内置专家实现
+│   │   ├── conflict.py        # 冲突检测
+│   │   ├── consensus.py       # 共识提炼
+│   │   └── formatter.py       # 报告格式化
+│   └── experts/               # 内置专家实现
 │       └── ...
 ├── experts/
-│   ├── people/               # 人物型专家（52位）
-│   │   ├── philosophy/       # 12位
-│   │   ├── science/          # 6位
-│   │   ├── psychology/       # 6位
-│   │   ├── economics/        # 6位
-│   │   ├── literature/       # 13位
-│   │   ├── military/         # 2位
-│   │   ├── math/            # 3位
-│   │   └── religion/         # 2位
-│   └── methods/              # 方法论型框架（19个）
-│       ├── complexity-perspective/
-│       ├── gametheory-perspective/
-│       ├── bayesian-perspective/
-│       ├── cognition-perspective/
-│       └── ...（共19个）
+│   ├── people/                # 人物型专家（52位）
+│   │   ├── philosophy/        # 12位
+│   │   ├── science/           # 6位
+│   │   ├── psychology/        # 6位
+│   │   ├── economics/         # 6位
+│   │   ├── literature/        # 13位
+│   │   ├── military/          # 2位
+│   │   ├── math/             # 3位
+│   │   └── religion/           # 2位
+│   │   └── <name>-perspective/
+│   │       ├── SKILL.md       # OpenClaw Skill
+│   │       └── schema.json    # JSON Schema（跨框架）
+│   └── methods/               # 方法论型框架（19个）
+│       └── <name>-perspective/
+│           ├── SKILL.md       # OpenClaw Skill
+│           └── schema.json    # JSON Schema（跨框架）
 └── tests/
 ```
 
@@ -201,37 +289,21 @@ Agent-superthinking/
    ```
 
 2. 将生成的 SKILL.md 放入 `experts/people/<领域>/`
-3. 更新 `INDEX_PEOPLE.md`
+3. 运行转换脚本生成 JSON：
+   ```bash
+   python scripts/sketch_to_json.py
+   ```
+4. 更新 `INDEX_PEOPLE.md`
 
 ### 新增方法论框架
 
-1. 在 `experts/methods/` 下创建 `<name>-perspective/SKILL.md`
-2. 格式：
-   ```yaml
-   ---
-   name: <name>-perspective
-   description: |
-     <框架名>：<核心贡献>
-     触发词：<关键词>
-   ---
-   
-   # <框架名>
-   
-   ## 核心心智模型
-   - 模型1: <名称> - <一句话>
-   - 模型2: ...
-   
-   ## 决策启发式
-   1. <规则名>: <描述>
-   
-   ## 表达DNA
-   - 术语风格：<描述>
-   - 句式特点：<描述>
-   
-   ## 诚实边界
-   - <局限性>
+1. 在 `experts/methods/<name>-perspective/` 下创建 `SKILL.md`
+2. 格式：见 [SCHEMA.md](./SCHEMA.md)
+3. 运行转换脚本生成 JSON：
+   ```bash
+   python scripts/sketch_to_json.py
    ```
-3. 更新 `INDEX_METHODS.md`
+4. 更新 `INDEX_METHODS.md`
 
 ---
 
@@ -239,7 +311,7 @@ Agent-superthinking/
 
 | 版本 | 更新内容 |
 |------|---------|
-| v2.0 | 双轨系统上线：52人物 + 19方法论 |
+| v2.0 | 双轨系统上线：52人物 + 19方法论 + JSON Schema 跨框架支持 |
 | v1.0 | 初始版本：18视角 |
 
 ---

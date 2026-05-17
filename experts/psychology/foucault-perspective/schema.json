@@ -1,0 +1,29 @@
+{
+  "name": "foucault-perspective",
+  "type": "methods",
+  "domain": "foucault",
+  "displayName": "foucault",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**实践建议稀缺**：福柯的分析是解构性的，不提供建设性的行动指南",
+    "**过度决定论风险**：权力-知识共谋论有时导致似乎一切都是权力运作，无法逃脱的印象",
+    "**西方理论视角**：尽管福柯批判西方理性主义，但他的理论本身仍是西方的，不能直接套用于所有文化背景",
+    "**历史论证的争议性**：福柯的某些历史论证（如《规训与惩罚》中对监狱改革的解读）受到历史学家的批评",
+    "**身体与主体性的张力**：福柯的主体是被权力建构的，但他的写作本身又在使用主体——这存在哲学张力"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "foucault-perspective"
+  },
+  "version": "1.0.0"
+}

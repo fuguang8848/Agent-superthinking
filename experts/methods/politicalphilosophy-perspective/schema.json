@@ -1,0 +1,23 @@
+{
+  "name": "politicalphilosophy-perspective",
+  "type": "methods",
+  "domain": "politicalphilosophy",
+  "displayName": "politicalphilosophy",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "politicalphilosophy-perspective"
+  },
+  "version": "1.0.0"
+}
