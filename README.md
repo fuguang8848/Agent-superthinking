@@ -1,6 +1,6 @@
-# ⚔️ Agent-Superthinking
+# Agent-Superthinking
 
-> 多维度思考框架 for AI Agent。输入问题 → 路由层判断 → 用户选择轨别 → 并行分析 → 冲突检测 → 综合报告。
+> 多维度思考框架：输入问题 → 路由层判断 → 用户选择轨别 → 并行分析 → 冲突检测 → 综合报告。
 
 **面向 AI 框架设计**：模块化、可扩展、按需加载，适合集成到各类 AI Agent 系统。
 
@@ -322,4 +322,4 @@ MIT
 
 ---
 
-_⚔️ 楚灵 · Agent-Superthinking_
+Agent-Superthinking_
