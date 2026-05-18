@@ -206,7 +206,7 @@ class LLMRouter(Router):
             start = response.find("[")
             end = response.rfind("]")
             
-            if start != -1 and end != -1:
+            if start != -1 and end != -1 and end > start:
                 json_str = response[start:end+1]
                 parsed = json.loads(json_str)
                 if isinstance(parsed, list):

@@ -1,5 +1,6 @@
 enabled_perspectives:
 - generated_decision
+- generated_meta
 - magi_debate
 - mao_perspective
 - meta_thinking
