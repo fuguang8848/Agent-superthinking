@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeou
 from dataclasses import dataclass
 from typing import Optional, Any
 
-from super_thinking.core.registry import Registry
+from super_thinking.core.registry import Registry, get_registry
 from super_thinking.core.router import Router, RoutingResult, get_router
 from super_thinking.perspectives._interface import Perspective, PerspectiveOutput
 

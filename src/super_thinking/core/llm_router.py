@@ -21,11 +21,23 @@ def _get_shared_context():
     try:
         import sys
         from pathlib import Path
-        
-        agent_symphony_path = Path(__file__).parent.parent.parent.parent / "agent-symphony"
+
+        # Navigate: llm_router.py -> core/ -> super_thinking/ -> src/ -> Agent-Superthinking/
+        # Then up to workspace level, then down to AgentSymphony
+        base = Path(__file__).resolve().parent.parent.parent.parent  # -> Agent-Superthinking/src/
+        workspace = base.parent  # -> workspace/
+        agent_symphony_path = workspace / "AgentSymphony"
+
+        if not agent_symphony_path.exists():
+            # Fallback: try same level
+            agent_symphony_path = base / "AgentSymphony"
+
+        if not agent_symphony_path.exists():
+            return None
+
         if str(agent_symphony_path) not in sys.path:
             sys.path.insert(0, str(agent_symphony_path))
-        
+
         from shared.context import get_context
         return get_context()
     except Exception:
@@ -131,7 +143,7 @@ class LLMRouter(Router):
             response = ctx.call_llm(
                 prompt=prompt,
                 system="你是一个专家选择助手，擅长根据用户需求选择最相关的专家。只返回JSON数组格式的专家ID列表。",
-                max_tokens=512
+                max_tokens=2048
             )
             
             # Parse JSON response
@@ -194,25 +206,33 @@ class LLMRouter(Router):
     def _parse_llm_response(self, response: str) -> list[str]:
         """Parse LLM response to extract perspective IDs."""
         try:
-            # Try to find JSON array in response
             response = response.strip()
-            
-            # Handle cases where LLM wraps JSON in markdown code blocks
+            logger.info(f"[LLMRouter] Raw LLM response: {response[:500]}")
+
+            # Handle markdown code blocks
             if response.startswith("```"):
                 lines = response.split("\n")
-                response = "".join(lines[1:-1])  # Remove ```json and ```
-            
-            # Find JSON array
+                response = "\n".join(lines[1:-1])
+
+            # Try JSON array first
             start = response.find("[")
             end = response.rfind("]")
-            
+
             if start != -1 and end != -1 and end > start:
                 json_str = response[start:end+1]
                 parsed = json.loads(json_str)
                 if isinstance(parsed, list):
                     return [str(pid) for pid in parsed]
-            
+
+            # Fallback: try to extract IDs from plain text like [expert1, expert2]
+            import re
+            matches = re.findall(r'["\']?([a-zA-Z_][a-zA-Z0-9_-]*)["\']?', response)
+            if matches:
+                logger.info(f"[LLMRouter] Extracted IDs via regex: {matches}")
+                return matches
+
+            logger.warning(f"[LLMRouter] Could not parse response: {response[:200]}")
             return []
         except Exception as e:
-            logger.warning(f"Failed to parse LLM response: {e}")
+            logger.warning(f"[LLMRouter] Parse error: {e}, response: {response[:200]}")
             return []
