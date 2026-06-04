@@ -1,0 +1,90 @@
+{
+  "user_id": "default",
+  "version": "1.0",
+  "created_at": "2026-06-03T21:53:17.960671",
+  "updated_at": "2026-06-03T21:53:17.960687",
+  "feedback_history": [],
+  "expert_preferences": {},
+  "question_patterns": {
+    "职业发展": {
+      "count": 0,
+      "preferred_experts": [],
+      "avg_rating": 0.0
+    },
+    "人生规划": {
+      "count": 0,
+      "preferred_experts": [],
+      "avg_rating": 0.0
+    },
+    "情感关系": {
+      "count": 0,
+      "preferred_experts": [],
+      "avg_rating": 0.0
+    },
+    "创业商业": {
+      "count": 0,
+      "preferred_experts": [],
+      "avg_rating": 0.0
+    },
+    "学术研究": {
+      "count": 0,
+      "preferred_experts": [],
+      "avg_rating": 0.0
+    },
+    "通用问题": {
+      "count": 0,
+      "preferred_experts": [],
+      "avg_rating": 0.0
+    }
+  },
+  "expert_combinations": {},
+  "routing_weights": {
+    "default_weights": {
+      "职业发展": {
+        "稻盛和夫": 0.9,
+        "德鲁克": 0.9,
+        "乔布斯": 0.8,
+        "查理芒格": 0.7
+      },
+      "人生规划": {
+        "尼采": 0.9,
+        "加缪": 0.9,
+        "苏格拉底": 0.8,
+        "王阳明": 0.7
+      },
+      "情感关系": {
+        "佛学视角": 0.9,
+        "心理学视角": 0.9,
+        "孔子": 0.7
+      },
+      "创业商业": {
+        "巴菲特": 0.9,
+        "查理芒格": 0.9,
+        "孙正义": 0.8,
+        "马斯克": 0.7
+      },
+      "学术研究": {
+        "费曼": 0.9,
+        "西蒙": 0.8,
+        "学科专家": 0.9
+      }
+    },
+    "personal_adjustments": {},
+    "dynamic_boost": {
+      "recent_success": 0.1,
+      "context_match": 0.2,
+      "streak_bonus": 0.05
+    }
+  },
+  "user_background": {},
+  "statistics": {
+    "total_questions": 0,
+    "total_feedback": 0,
+    "avg_rating_all": 0.0,
+    "most_used_experts": [],
+    "most_successful_type": null,
+    "active_days": 0,
+    "last_active": null
+  },
+  "name": "Default User"
+}

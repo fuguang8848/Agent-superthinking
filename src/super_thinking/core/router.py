@@ -26,19 +26,34 @@ class RoutingResult:
     mode: str  # auto, force_all, selective
     reason: str  # Explanation of routing decision
     scores: dict[str, float]  # Match scores for each perspective
+    routing_recommendation: Optional[dict] = None  # Profile-aware recommendation data
 
 
 class Router:
-    """Routes input to appropriate perspectives."""
+    """Routes input to appropriate perspectives with optional profile awareness."""
 
-    def __init__(self, registry: Optional[Registry] = None):
-        self._registry = registry or get_registry()
+    def __init__(
+        self,
+        registry: Optional["Registry"] = None,
+        profile_manager: Optional["ProfileManager"] = None,
+    ):
+        self._registry = registry
+        self._profile_manager = profile_manager
+
+    @property
+    def _reg(self) -> "Registry":
+        from super_thinking.core.registry import Registry as RegClass
+
+        if self._registry is None:
+            self._registry = RegClass()
+        return self._registry
 
     def route(
         self,
         input: str,
         mode: str = "auto",
         selective_ids: Optional[list[str]] = None,
+        user_id: Optional[str] = None,
     ) -> RoutingResult:
         """Determine which perspectives to activate.
 
@@ -46,6 +61,7 @@ class Router:
             input: User's question or problem statement
             mode: Routing mode - "auto", "force_all", or "selective"
             selective_ids: List of perspective IDs (for selective mode)
+            user_id: Optional user ID for profile-aware routing
 
         Returns:
             RoutingResult with activated perspectives and metadata
@@ -55,15 +71,15 @@ class Router:
         elif mode == "selective":
             return self._route_selective(selective_ids or [])
         else:
-            return self._route_auto(input)
+            return self._route_auto(input, user_id)
 
-    def _route_auto(self, input: str) -> RoutingResult:
-        """Auto-route based on trigger keyword matching."""
+    def _route_auto(self, input: str, user_id: Optional[str] = None) -> RoutingResult:
+        """Auto-route based on trigger keyword matching + optional profile weighting."""
         input_lower = input.lower()
         scores: dict[str, float] = {}
         matched_keywords: dict[str, list[str]] = {}
 
-        enabled = self._registry.list_enabled()
+        enabled = self._reg.list_enabled()
 
         for perspective in enabled:
             keywords = perspective.trigger_keywords
@@ -78,6 +94,13 @@ class Router:
                 score = len(matches) / len(keywords)
                 scores[perspective.id] = score
                 matched_keywords[perspective.id] = matches
+
+        # Profile-aware weight adjustment
+        recommendation = None
+        if user_id and self._profile_manager is not None:
+            recommendation = self._apply_profile_adjustment(
+                input, user_id, scores
+            )
 
         # Activate perspectives with score > 0 (at least one keyword match)
         # Or at least the top scoring ones if no matches
@@ -94,13 +117,57 @@ class Router:
                 if pid in matched_keywords
             ]
             reason = f"Keyword matches: {', '.join(matched)}"
+            if recommendation:
+                reason += f" | Profile-adjusted"
 
         return RoutingResult(
             activated=activated,
             mode="auto",
             reason=reason,
             scores=scores,
+            routing_recommendation=recommendation,
         )
+
+    def _apply_profile_adjustment(
+        self, input: str, user_id: str, scores: dict[str, float]
+    ) -> Optional[dict]:
+        """Apply profile-based weight adjustment to routing scores."""
+        try:
+            from src.learning import ProfileManager, RoutingOptimizer
+
+            if self._profile_manager is None:
+                return None
+
+            profile = self._profile_manager.get_profile(user_id)
+            if not profile or profile.get("statistics", {}).get("total_questions", 0) == 0:
+                # No profile data yet, skip adjustment
+                return None
+
+            optimizer = RoutingOptimizer(profile)
+            question_type = self._profile_manager.classify_question(input)
+
+            # Get adjusted weights from optimizer
+            adjusted = optimizer.adjust_weights(question_type)
+
+            # Boost scores for highly-weighted experts in profile
+            for expert_name, weight_boost in adjusted.items():
+                # Match expert name to perspective ID via trigger keywords
+                for pid, score in scores.items():
+                    perspective = self._reg.get(pid)
+                    if perspective and hasattr(perspective, "trigger_keywords"):
+                        # If expert name appears in any trigger keyword, boost that perspective
+                        for kw in perspective.trigger_keywords:
+                            if expert_name in kw or kw in expert_name:
+                                scores[pid] = min(1.0, scores[pid] + weight_boost * 0.5)
+
+            # Re-sort activated by adjusted scores
+            return {
+                "question_type": question_type,
+                "adjusted_weights": adjusted,
+                "profile_applied": True,
+            }
+        except Exception:
+            return None
 
     def _route_force_all(self) -> RoutingResult:
         """Activate all enabled perspectives."""
@@ -141,9 +208,12 @@ class Router:
         )
 
 
-def get_router(registry: Optional[Registry] = None) -> Router:
-    """Get a Router instance."""
-    return Router(registry)
+def get_router(
+    registry: Optional[Registry] = None,
+    profile_manager: Optional[Any] = None,
+) -> Router:
+    """Get a Router instance with optional profile manager."""
+    return Router(registry=registry, profile_manager=profile_manager)
 
 
 def get_registry(registry: Optional[Registry] = None) -> Registry:
