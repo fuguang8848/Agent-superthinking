@@ -299,4 +299,170 @@ Agent-superthinking/
 
 ---
 
-_⚔️ 楚灵 · 超思考自优化专家系统 v5_
+## ⚠️ v6 内测版：ContextBoard 专家协作机制
+
+> **内测版本 · 实验性功能 · 不暴露给普通用户**
+
+### 概述
+
+ContextBoard 是 v6 的核心新特性，提供专家间的共享状态板。各专家不是独立输出，而是在共享的 ContextBoard 上发布状态和中间结论，其他专家可以读到这些结论来深化自己的分析。
+
+### 核心概念
+
+```
+专家协作阶段：
+  THINKING   → 专家正在积极分析
+  REVIEWING  → 专家正在审视其他专家的结论
+  WAITING   → 专家等待其他专家的结论
+  CONCLUDED → 专家已发布最终结论
+```
+
+### 数据结构
+
+```python
+from super_thinking.team import ContextBoard, TeamIntegration
+
+board = ContextBoard()  # 共享状态板
+
+# 注册专家（指定层）
+board.register("buffett", layer=0)   # 第0层：先执行
+board.register("morgan", layer=1)    # 第1层：可读到第0层结论
+board.register("dalio", layer=1)
+
+# 发布中间结论
+board.publish_insight("buffett", "市场风险：X", ExpertStatus.REVIEWING)
+
+# 完成后标记
+board.publish_concluded("buffett", "最终结论：分散投资")
+
+# 第1层专家读取第0层结论
+insights = board.get_visible_insights("morgan")
+# → {"buffett": "最终结论：分散投资"}
+```
+
+### TeamIntegration 封装
+
+```python
+from super_thinking.team import TeamIntegration
+
+integration = TeamIntegration(board)
+
+# 注册专家
+integration.register_expert("buffett", layer=0)
+integration.register_expert("dalio", layer=1)
+
+# 发布结论
+integration.publish_insight("buffett", "风险评估：...", ExpertStatus.REVIEWING)
+integration.publish_concluded("buffett", "最终结论：...")
+
+# 获取其他专家的结论
+insights = integration.get_insights_for("dalio")
+
+# 查询状态
+integration.is_concluded("buffett")  # True
+integration.all_concluded()           # False if others pending
+```
+
+### Jury 集成：`think_with_board()`
+
+```python
+from super_thinking.core.jury import Jury
+from super_thinking.team import ContextBoard
+
+jury = Jury()
+board = ContextBoard()
+
+# 定义专家层级
+layers = {
+    "meta_thinking": 0,   # 第0层：先执行
+    "risk_detail": 0,
+    "buffett": 1,         # 第1层：可读到第0层结论
+    "morgan": 1,
+}
+
+result = jury.think_with_board(
+    input="Should I invest in Tesla?",
+    execution_layers=layers,  # 可选，默认全在第0层
+    board=board,
+    mode="llm",              # 或 "auto", "force_all"
+)
+
+# 分析结果
+for output in result.get_outputs():
+    print(f"{output.perspective_name}: {output.analysis}")
+```
+
+### 分层执行流程
+
+```
+第0层执行：
+  Expert A ──publish_insight──→ ContextBoard
+  Expert B ──publish_insight──→ ContextBoard
+
+第1层执行（可读到第0层结论）：
+  Expert C reads: A的结论, B的结论
+  Expert C ──publish_insight──→ ContextBoard
+```
+
+### ContextBoard 可视化状态
+
+```python
+snapshot = board.get_board_state()
+
+snapshot.total_experts   # 总专家数
+snapshot.concluded_count # 已完成数
+snapshot.entries         # {expert_id: ExpertEntry}
+```
+
+### 专家 Entry 结构
+
+```python
+@dataclass
+class ExpertEntry:
+    expert_id: str
+    status: ExpertStatus  # THINKING/REVIEWING/WAITING/CONCLUDED
+    insight: Optional[str]  # 中间或最终结论
+    timestamp: float       # 发布时间戳
+    layer: int            # 所属层级
+```
+
+### 与 v5 的区别
+
+| 维度 | v5 | v6 内测版 |
+|------|-----|----------|
+| 专家执行 | 完全独立并行 | 通过 ContextBoard 共享中间结论 |
+| 执行顺序 | 全部并行 | 支持分层（layer 0 先执行） |
+| 跨专家学习 | 无 | 后层可读先层结论 |
+| 反馈闭环 | 有（经验晋升） | 砍掉（内测版不暴露） |
+| SupervisorAdapter | 有 | 砍掉（LLM自动路由） |
+
+### 限制
+
+- **内测版**：仅内部测试，不暴露给普通用户
+- **不暴露**：不写入文档首页、changelog 等公开材料
+- **无持久化**：ContextBoard 在内存中，进程结束即丢失
+- **无经验闭环**：不实现经验写入和自动化晋升
+
+### 测试
+
+```bash
+cd Agent-superthinking
+python -m pytest tests/test_team_integration.py -v
+```
+
+### 目录结构（v6 新增）
+
+```
+src/super_thinking/
+├── team/                      # ← v6 新增
+│   ├── __init__.py
+│   ├── context_board.py       # 共享状态板
+│   └── team_integration.py    # 协作协调层
+└── core/
+    └── jury.py               # ← 新增 think_with_board()
+```
+
+---
+
+_⚔️ 楚灵 · 超思考自优化专家系统 v5 + v6内测(ContextBoard)_
+
