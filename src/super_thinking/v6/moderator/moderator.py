@@ -367,39 +367,118 @@ class DefaultModerator:
     # -------------------------------------------------------------------------
 
     def format_final_consensus(self, session: DebateSession) -> FinalConsensus:
+        """
+        按 §2.10 三层信息源生成最终结论：
+        1. 会议结论（共识点 + 分歧点 + 未解决矛盾）
+        2. 各专家最终观点（via final_stmts）
+        3. 外部咨询观点（via session.external_consultations）
+        """
         all_args = [arg for r in session.rounds for arg in r.menu.items]
         consensus = [a.claim for a in all_args if a.confidence >= 0.7]
-        divergence = [a.claim for a in all_args if a.confidence < 0.5]
+        divergence = [
+            a.claim for a in all_args
+            if a.confidence < 0.5 and a.status.value == "active"
+        ]
+        root_contradictions = tuple(
+            a.claim for a in all_args
+            if a.status.value == "active" and a.confidence < 0.6
+        )
         suggestions = []
-
         if consensus:
-            suggestions.append("共识已达成")
+            suggestions.append("专家们在部分问题上已达成共识")
         if divergence:
-            suggestions.append("仍存在分歧")
-
+            suggestions.append("仍存在核心分歧，建议进一步探讨")
+        if len(session.rounds) >= self._config.max_rounds:
+            suggestions.append("已达到最大轮次限制，请综合各方观点做出判断")
+        # 外部咨询观点（§2.10 三层信息源之一）
+        external_views = tuple(
+            ec.response_text
+            for ec in session.external_consultations
+            if ec.response_text and not ec.timed_out
+        )
         return FinalConsensus(
-            consensus_points=tuple(set(consensus)),
-            divergence_points=tuple(set(divergence)),
-            root_contradictions=tuple(
-                a.claim for a in all_args if a.status.value == "active"
-            ),
+            consensus_points=tuple(dict.fromkeys(consensus)),
+            divergence_points=tuple(dict.fromkeys(divergence)),
+            root_contradictions=root_contradictions,
             suggestions=tuple(suggestions),
             final_stmts=session.final_stmts,
+            external_views=external_views,
         )
 
     # -------------------------------------------------------------------------
-    # 询问用户
+    # 询问用户（§2.9 + §4.5）
     # -------------------------------------------------------------------------
 
     def ask_user(self, session: DebateSession, reason: str) -> UserQuestion:
+        """
+        生成向用户询问的标准格式问题（§2.9 + §4.5）。
+
+        当主持人判断分歧无法收敛时，生成包含以下内容的结构化询问：
+        1. 当前辩论状态摘要（核心问题、已收敛的分歧点）
+        2. 具体补充请求
+        """
+        import time as _time
+
+        last_round = session.rounds[-1] if session.rounds else None
+        last_menu = last_round.menu if last_round else None
+
+        if last_menu:
+            all_args = list(last_menu.items) + list(last_menu.converged)
+            consensus_claims = [a.claim for a in all_args if a.confidence >= 0.7]
+            divergence_claims = [
+                a.claim for a in last_menu.active() if a.confidence < 0.6
+            ]
+        else:
+            consensus_claims, divergence_claims = [], []
+
+        specific_questions = []
+        for claim in divergence_claims[:3]:
+            truncated = claim[:40] + ("..." if len(claim) > 40 else "")
+            specific_questions.append(
+                "关于「{}」，您有什么具体的判断标准或事实依据？".format(truncated)
+            )
+        specific_questions.append(
+            "您是否了解任何可能影响当前辩论的外部因素或背景信息？"
+        )
+
+        lines = ["## 当前辩论状态摘要"]
+        q_short = session.question
+        if len(q_short) > 50:
+            q_short = q_short[:50] + "..."
+        lines.append("- **核心问题**：{}".format(q_short))
+        lines.append(
+            "- **已收敛的论点**：{}".format(
+                consensus_claims[0] if consensus_claims else "暂无"
+            )
+        )
+        lines.append(
+            "- **未解决的核心争议**：{}".format(
+                divergence_claims[0] if divergence_claims else "暂无"
+            )
+        )
+        lines.append("")
+        lines.append("## 请您补充")
+        lines.append("专家们在上述问题上存在较大分歧，需要您提供更多信息：")
+        for i, q_text in enumerate(specific_questions, 1):
+            lines.append("{}. {}".format(i, q_text))
+
+        if reason:
+            lines.insert(0, '**原因**：{}\n'.format(reason))
+
         return UserQuestion(
-            question_id=QuestionId(f"Q-{session.session_id}-{len(session.rounds)}"),
-            text=reason,
-            options=("继续", "结束", "补充信息"),
-            triggered_by="moderator_init",
+            question_id=QuestionId(
+                "Q-{}-{}-{}".format(
+                    session.session_id, len(session.rounds), _time.time_ns()
+                )
+            ),
+            text="\n".join(lines),
+            options=("继续辩论", "结束辩论", "提供补充信息"),
+            triggered_by="moderator_divergence",
             context={
                 "session_id": session.session_id,
                 "round": len(session.rounds),
+                "consensus_count": len(consensus_claims),
+                "divergence_count": len(divergence_claims),
             },
         )
 
