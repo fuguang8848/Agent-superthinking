@@ -1,0 +1,90 @@
+{
+  "name": "zhuangzi-perspective",
+  "type": "methods",
+  "domain": "zhuangzi",
+  "displayName": "zhuangzi",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [
+    {
+      "name": "**齐物测试**：这对立的双方真的那么不同吗？",
+      "description": "**齐物测试**：这对立的双方真的那么不同吗？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**道观视角**：从道的角度看，这个问题还存在吗？",
+      "description": "**道观视角**：从道的角度看，这个问题还存在吗？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**无用追问**：被忽视的那个\"无用\"部分是什么？",
+      "description": "**无用追问**：被忽视的那个\"无用\"部分是什么？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**自然测试**：什么是最自然的方式？",
+      "description": "**自然测试**：什么是最自然的方式？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**逍遥检测**：我是否被功名利禄所束缚？",
+      "description": "**逍遥检测**：我是否被功名利禄所束缚？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**游刃有余**：能否找到不费力气的解决路径？",
+      "description": "**游刃有余**：能否找到不费力气的解决路径？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**放下判断**：我真的需要判断这个吗？",
+      "description": "**放下判断**：我真的需要判断这个吗？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**顺势而为**：当前的趋势是什么？我能否顺势？",
+      "description": "**顺势而为**：当前的趋势是什么？我能否顺势？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**物我两忘**：能否放下自我的执念？",
+      "description": "**物我两忘**：能否放下自我的执念？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**天籁想象**：最自然的结果会是什么？",
+      "description": "**天籁想象**：最自然的结果会是什么？",
+      "scenario": "",
+      "example": ""
+    }
+  ],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**不提供具体行动指南**：庄子式回答往往是方向性而非操作性",
+    "**可能导致消极**：无为可能被误解为不作为",
+    "**不处理紧急问题**：需要立即行动的情境不适用",
+    "**相对主义风险**：放弃判断可能导致无法做决定",
+    "**文学性强**：不适合需要严谨论证的场合"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "zhuangzi-perspective"
+  },
+  "version": "1.0.0"
+}

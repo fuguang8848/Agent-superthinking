@@ -1,0 +1,23 @@
+{
+  "name": "communication-perspective",
+  "type": "methods",
+  "domain": "communication",
+  "displayName": "communication",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "**典型表达风格：**",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "communication-perspective"
+  },
+  "version": "1.0.0"
+}

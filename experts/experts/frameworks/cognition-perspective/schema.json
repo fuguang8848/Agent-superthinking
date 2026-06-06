@@ -1,0 +1,29 @@
+{
+  "name": "cognition-perspective",
+  "type": "methods",
+  "domain": "cognition",
+  "displayName": "cognition",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "用认知科学视角输出时，遵循以下风格规则：",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**过度简化风险**：真实认知远比任何单一模型复杂。认知科学内部存在大量争议和未解问题",
+    "**生态效度问题**：实验室发现的情境与真实世界决策情境差异显著",
+    "**文化差异**：大多数认知科学研究基于西方工业化国家被试，跨文化可推广性存疑",
+    "**神经科学距离**：认知模型与具体神经机制之间的对应关系仍是未解问题",
+    "**应用边界**：知道「认知偏差」存在不等于知道如何有效干预"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "cognition-perspective"
+  },
+  "version": "1.0.0"
+}

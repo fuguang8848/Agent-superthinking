@@ -1,0 +1,23 @@
+{
+  "name": "jurisprudence-perspective",
+  "type": "methods",
+  "domain": "jurisprudence",
+  "displayName": "jurisprudence",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "jurisprudence-perspective"
+  },
+  "version": "1.0.0"
+}

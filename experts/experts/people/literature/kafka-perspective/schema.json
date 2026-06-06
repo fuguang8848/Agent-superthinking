@@ -1,0 +1,29 @@
+{
+  "name": "kafka-perspective",
+  "type": "methods",
+  "domain": "kafka",
+  "displayName": "kafka",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "当以卡夫卡视角输出时，遵循以下风格规则：",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**时代局限**：卡夫卡是一战前后的布拉格，德语犹太人的身份认同，他的世界已经不存在",
+    "**反解决方案**：卡夫卡不给出口，用他的视角分析可能导向绝望",
+    "**精英主义**：卡夫卡的文学是高密度的，不适合所有人",
+    "**过度解释风险**：卡夫卡的作品被过度解释，每个人都想在里面找「真正的含义」",
+    "**翻译损耗**：德语原文的精确性在任何翻译中都有损耗"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "kafka-perspective"
+  },
+  "version": "1.0.0"
+}

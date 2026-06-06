@@ -1,0 +1,23 @@
+{
+  "name": "statistical-perspective",
+  "type": "methods",
+  "domain": "statistical",
+  "displayName": "statistical",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "statistical-perspective"
+  },
+  "version": "1.0.0"
+}

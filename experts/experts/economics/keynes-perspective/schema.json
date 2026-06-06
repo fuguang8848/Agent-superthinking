@@ -1,0 +1,29 @@
+{
+  "name": "keynes-perspective",
+  "type": "methods",
+  "domain": "keynes",
+  "displayName": "keynes",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**大萧条的历史特殊性**：大萧条是由多重因素叠加造成的，凯恩斯框架强调需求侧，但供给侧（金本位）、金融恐慌、国际传染等因素同等重要",
+    "**数学化的局限**：凯恩斯的文字论述远比数学模型丰富，形式化过程中丢失了大量细微之处",
+    "**现代经济结构差异**：1930年代的经济结构（制造业主导、工会力量、开放金本位）与当代差异巨大，直接类比需要调整",
+    "**凯恩斯内部流派分歧**：新古典综合、后凯恩斯、新凯恩斯等分支存在重大分歧，不能混为一谈",
+    "**凯恩斯的政治天真**：他低估了政策的政治约束——即便政策方向正确，在民主体制下也可能被既得利益扭曲"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "keynes-perspective"
+  },
+  "version": "1.0.0"
+}

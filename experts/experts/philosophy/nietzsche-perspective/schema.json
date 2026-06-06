@@ -1,0 +1,90 @@
+{
+  "name": "nietzsche-perspective",
+  "type": "methods",
+  "domain": "nietzsche",
+  "displayName": "nietzsche",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [
+    {
+      "name": "**价值重估**：这个价值的起源是什么？它是否已经僵化？",
+      "description": "**价值重估**：这个价值的起源是什么？它是否已经僵化？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**主人/奴隶道德检测**：这是强者的创造还是弱者的自我安慰？",
+      "description": "**主人/奴隶道德检测**：这是强者的创造还是弱者的自我安慰？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**权力意志分析**：背后的驱动力是什么？是创造还是怨恨？",
+      "description": "**权力意志分析**：背后的驱动力是什么？是创造还是怨恨？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**永恒轮回测试**：如果这将重复无限次，我能拥抱它吗？",
+      "description": "**永恒轮回测试**：如果这将重复无限次，我能拥抱它吗？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**大地测试**：这个选择是提高还是降低了大地的意义？",
+      "description": "**大地测试**：这个选择是提高还是降低了大地的意义？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**自我超越**：这是否在推动我超越当前的自己？",
+      "description": "**自我超越**：这是否在推动我超越当前的自己？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**健康检查**：这个思想或价值是增强生命还是削弱生命？",
+      "description": "**健康检查**：这个思想或价值是增强生命还是削弱生命？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**创造者心态**：我在接受价值还是在创造价值？",
+      "description": "**创造者心态**：我在接受价值还是在创造价值？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**危险边缘**：真正的成长往往在安全的边界之外",
+      "description": "**危险边缘**：真正的成长往往在安全的边界之外",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**肯定测试**：我是否在肯定生命本身，而非否定它？",
+      "description": "**肯定测试**：我是否在肯定生命本身，而非否定它？",
+      "scenario": "",
+      "example": ""
+    }
+  ],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**不提供确定性**：尼采式回答往往是开放性命题",
+    "**容易被误读**：他的批判性常被误解为倡导暴力或极权",
+    "**不适合实用决策**：过于哲学化，不适合具体操作",
+    "**可能引发焦虑**：面对价值真空不是舒适的体验",
+    "**不适合心理脆弱者**：他的挑战性可能造成伤害"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "nietzsche-perspective"
+  },
+  "version": "1.0.0"
+}

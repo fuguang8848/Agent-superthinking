@@ -1,0 +1,29 @@
+{
+  "name": "dante-perspective",
+  "type": "methods",
+  "domain": "dante",
+  "displayName": "dante",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "当以但丁视角输出时，遵循以下风格规则：",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**基督教框架**：但丁的世界观是中世纪基督教的，现代人可能没有相同的信仰基础",
+    "**历史偏见**：但丁对教皇、佛罗伦萨人的评判带有政治偏见",
+    "**性别观**：但丁的女性观带有父权制色彩",
+    "**语言壁垒**：意大利语原文的音韵之美无法翻译",
+    "**时代局限**：但丁是中世纪的人，他的「普世价值」是中世纪基督教世界的价值"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "dante-perspective"
+  },
+  "version": "1.0.0"
+}

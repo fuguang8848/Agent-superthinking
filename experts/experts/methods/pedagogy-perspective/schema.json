@@ -1,0 +1,23 @@
+{
+  "name": "pedagogy-perspective",
+  "type": "methods",
+  "domain": "pedagogy",
+  "displayName": "pedagogy",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "**典型表达风格：**",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "pedagogy-perspective"
+  },
+  "version": "1.0.0"
+}

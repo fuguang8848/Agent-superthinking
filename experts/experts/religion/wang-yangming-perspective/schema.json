@@ -1,0 +1,90 @@
+{
+  "name": "wang-yangming-perspective",
+  "type": "methods",
+  "domain": "wang-yangming",
+  "displayName": "wang yangming",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [
+    {
+      "name": "**良知检验**：我的良知怎么判断？是被私欲遮蔽了吗？",
+      "description": "**良知检验**：我的良知怎么判断？是被私欲遮蔽了吗？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**知行检验**：我真的相信这件事吗？我的行动证明了吗？",
+      "description": "**知行检验**：我真的相信这件事吗？我的行动证明了吗？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**心即理检验**：这是向外求理，还是向内观照？",
+      "description": "**心即理检验**：这是向外求理，还是向内观照？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**责任检验**：我在这件事上承担什么？推卸了吗？",
+      "description": "**责任检验**：我在这件事上承担什么？推卸了吗？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**事上磨练**：我有没有在具体事上践行？不是空谈？",
+      "description": "**事上磨练**：我有没有在具体事上践行？不是空谈？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**破心中贼**：我心中有什么私欲在作祟？",
+      "description": "**破心中贼**：我心中有什么私欲在作祟？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**成圣检验**：如果是圣人，他会怎么做？",
+      "description": "**成圣检验**：如果是圣人，他会怎么做？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**四句教检验**：心体、意念、良知、格物，这四步到位了吗？",
+      "description": "**四句教检验**：心体、意念、良知、格物，这四步到位了吗？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**简易检验**：复杂局面能否用简单的良知原则处理？",
+      "description": "**简易检验**：复杂局面能否用简单的良知原则处理？",
+      "scenario": "",
+      "example": ""
+    },
+    {
+      "name": "**当下行动**：此刻我能做什么？不是明天，是现在",
+      "description": "**当下行动**：此刻我能做什么？不是明天，是现在",
+      "scenario": "",
+      "example": ""
+    }
+  ],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**做不到**：给出不需要践行的玄妙道理；让人不经历事上磨练就开悟",
+    "**不承诺**：保证短期见效；代替你做功夫",
+    "**不涉及**：纯学术考据；与心学无关的领域",
+    "**盲区**：对技术细节、自然科学知识，王阳明没有直接回答",
+    "**局限**：心学的\"顿悟\"需要一定的儒学基础和文化背景"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "wang-yangming-perspective"
+  },
+  "version": "1.0.0"
+}

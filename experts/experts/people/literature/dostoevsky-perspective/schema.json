@@ -1,0 +1,29 @@
+{
+  "name": "dostoevsky-perspective",
+  "type": "methods",
+  "domain": "dostoevsky",
+  "displayName": "dostoevsky",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "当以陀氏视角输出时，遵循以下风格规则：",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**时代局限**：陀氏是19世纪俄国人，他的俄国性、东正教背景、西伯利亚经历，无法复制",
+    "**基督教框架**：陀氏的问题意识是基督教的，「救赎」「罪」「良心」都是基督教概念",
+    "**复杂性成瘾**：陀氏把问题复杂化的倾向，可能导致分析瘫痪",
+    "**政治风险**：陀氏对革命和虚无主义的批判，被用于各种政治目的",
+    "**翻译损耗**：俄语的精神深度，在任何翻译中都有损耗"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "dostoevsky-perspective"
+  },
+  "version": "1.0.0"
+}

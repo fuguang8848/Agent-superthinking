@@ -1,0 +1,29 @@
+{
+  "name": "cybernetics-perspective",
+  "type": "methods",
+  "domain": "cybernetics",
+  "displayName": "cybernetics",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**模型简化**：实际系统很少是线性的，模型是对现实的简化",
+    "**参数不确定性**：生物学、社会学系统的参数难以精确测量",
+    "**正反馈的临界点难预测**：相变发生的精确时机难以预判",
+    "**层级嵌套的复杂性**：多层级控制系统难以整体分析",
+    "**人的因素**：人的行为不完全可预测，反应非线性"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "cybernetics-perspective"
+  },
+  "version": "1.0.0"
+}
