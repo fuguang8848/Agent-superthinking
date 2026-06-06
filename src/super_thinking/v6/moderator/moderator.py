@@ -22,6 +22,7 @@ from ..session_recorder import SessionRecorder
 from ..external_consultation import ExternalConsultationManager
 from .argument_extractor import ArgumentExtractor
 from .menu_builder import MenuBuilder
+from .expert_selector import LLMExpertSelector
 
 if TYPE_CHECKING:
     from ..llm.provider import LLMProvider
@@ -39,6 +40,7 @@ class ModeratorConfig:
     decision_prompt_template: str = ""
     use_llm_for_extraction: bool = True
     use_llm_for_decision: bool = True
+    use_llm_for_selection: bool = True  # §2.5 动态专家池：LLM选择专家
 
 
 @runtime_checkable
@@ -89,17 +91,37 @@ class DefaultModerator:
         self._extractor = ArgumentExtractor()
         self._menu_builder = MenuBuilder()
         self._consultation_manager = consultation_manager
+        self._expert_selector = LLMExpertSelector(expert_pool, llm)
 
     # -------------------------------------------------------------------------
     # 专家面板选择
     # -------------------------------------------------------------------------
 
     def select_initial_panel(self, question: str, context: dict) -> tuple[Expert, ...]:
-        suggested = self._expert_pool.suggest_for(
-            question, top_k=self._config.max_initial_experts
-        )
+        """
+        选择初始专家面板。
+
+        §2.5：use_llm_for_selection=True 时用LLM语义分析选择专家，
+        否则退化为关键词匹配。
+        """
         min_exp = self._config.min_initial_experts
         max_exp = self._config.max_initial_experts
+
+        if self._mod_config.use_llm_for_selection:
+            selected = self._expert_selector.select(
+                question,
+                min_experts=min_exp,
+                max_experts=max_exp,
+            )
+            if selected:
+                return selected
+            # LLM失败时fallback到关键词
+            logger.warning("LLM expert selection returned empty, falling back to keyword")
+
+        # 关键词匹配兜底
+        suggested = self._expert_pool.suggest_for(
+            question, top_k=max_exp
+        )
         if len(suggested) < min_exp:
             all_exp = self._expert_pool.list_registered()
             remaining = [e for e in all_exp if e not in suggested]
@@ -133,8 +155,17 @@ class DefaultModerator:
     def decide(
         self, session: DebateSession, last_signal: ConvergenceSignal | None
     ) -> ModeratorDecision:
+        """
+        判断下一步主持人动作。
+
+        §2.3 主持人双重角色：
+        - use_llm_for_decision=True 时，LLM分析辩论状态后决定动作
+        - 硬编码规则（max_rounds/min_experts/converged）始终先检查，
+          排除无争议情况后，再进入LLM决策分支
+        """
         current_round = len(session.rounds)
 
+        # 硬编码规则：任何情况下都要先检查这些
         if current_round >= self._config.max_rounds:
             return ModeratorDecision(
                 action=ModeratorAction.ENTER_FINAL, reason="Max rounds reached"
@@ -151,7 +182,162 @@ class DefaultModerator:
                 reason="Too few active experts",
             )
 
+        # LLM决策分支：分析辩论状态，判断最优动作
+        if self._mod_config.use_llm_for_decision:
+            return self._decide_with_llm(session, last_signal)
+
         return ModeratorDecision(action=ModeratorAction.CONTINUE, reason="Continue debate")
+
+    # --------------------------------------------------------------------------
+    # LLM仲裁决策（§2.3 主持人双重角色：对内组织辩论）
+    # --------------------------------------------------------------------------
+
+    def _decide_with_llm(
+        self, session: DebateSession, last_signal: ConvergenceSignal | None
+    ) -> ModeratorDecision:
+        """
+        用LLM分析辩论状态，决定主持人动作。
+
+        §2.3：当 use_llm_for_decision=True 时调用。
+        LLM综合以下信息判断：
+        - 当前轮次 / 已完成轮次
+        - 专家发言摘要
+        - 收敛信号（重叠率/密度/漂移）
+        - 主持人方法论建议（如果有）
+        - 外部咨询历史
+
+        输出 ModeratorDecision：
+        - CONTINUE: 继续辩论
+        - CONVERGE: 已有充分共识，结束辩论
+        - ASK_USER: 需要用户输入才能继续
+        - EXTERNAL_CONSULT: 缺少某个视角，发起外部咨询
+        """
+        # 构建决策上下文
+        round_num = len(session.rounds) + 1
+
+        # 收集近两轮发言摘要
+        statement_summaries = []
+        for rnd in session.rounds[-2:]:
+            for stmt in rnd.statements:
+                statement_summaries.append(
+                    f"[{stmt.expert_name}]({stmt.role.value}): "
+                    f"置信度={stmt.confidence} | "
+                    f"{stmt.content[:150]}..."
+                )
+
+        # 收敛信号详情
+        conv_info = "无"
+        if last_signal:
+            conv_info = (
+                f"综合得分={last_signal.overall_score:.3f} "
+                f"| 重叠率={last_signal.overlap:.3f} "
+                f"| 新论点密度={last_signal.new_arg_density:.3f} "
+                f"| 置信漂移={last_signal.confidence_drift:.3f}"
+            )
+
+        # 外部咨询历史
+        ext_consults = []
+        for ec in session.external_consultations[-3:]:
+            ext_consults.append(f"- [{ec.expert_id}]: {ec.response_text[:80]}...")
+
+        # 可用专家列表
+        available = []
+        for e in session.expert_pool.list_registered():
+            active_ids = {ae.id for ae in session.active_experts}
+            status = "参与中" if e.id in active_ids else "未参与"
+            available.append(f"- {e.name}({e.id}): {status}")
+
+        prompt = f"""你是辩论主持人。分析以下辩论状态，决定下一步动作。
+
+## 当前状态
+- 辩论问题：「{session.question}」
+- 当前轮次：第{round_num}轮（最多{self._config.max_rounds}轮）
+- 活跃专家：{[e.name for e in session.active_experts]}
+
+## 收敛信号
+{conv_info}
+
+## 近两轮专家发言
+"""
+        if statement_summaries:
+            prompt += "\n".join(statement_summaries)
+        else:
+            prompt += "（第1轮，尚未开始发言）"
+
+        if ext_consults:
+            prompt += f"\n\n## 外部咨询历史\n{'\n'.join(ext_consults)}"
+
+        prompt += f"""
+
+## 可用专家池
+{"\n".join(available)}
+
+## 可选动作
+- CONTINUE：继续辩论，让专家继续发言或反驳
+- CONVERGE：已有充分共识，可以结束辩论进入最终结论
+- ASK_USER：需要用户输入（比如用户视角、额外信息、仲裁意见）
+- EXTERNAL_CONSULT：当前专家组合缺少某个领域，需要私下咨询外部专家
+
+输出格式（严格JSON）：
+{{
+  "action": "CONTINUE|CONVERGE|ASK_USER|EXTERNAL_CONSULT",
+  "reason": "简短原因说明",
+  "question_to_user": "如果选ASK_USER，写出要问用户的具体问题",
+  "consult_expert_id": "如果选EXTERNAL_CONSULT，写出要咨询的专家ID"
+}}
+"""
+
+        try:
+            response = self._llm.complete_json(
+                prompt,
+                system="你是一个专业辩论主持人。输出严格JSON格式。",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "action": {"type": "string", "enum": ["CONTINUE", "CONVERGE", "ASK_USER", "EXTERNAL_CONSULT"]},
+                        "reason": {"type": "string"},
+                        "question_to_user": {"type": "string"},
+                        "consult_expert_id": {"type": "string"},
+                    },
+                    "required": ["action", "reason"],
+                },
+            )
+            action_str = response.get("action", "CONTINUE")
+            reason = response.get("reason", "LLM decision")
+
+            # 映射到 ModeratorAction
+            action_map = {
+                "CONTINUE": ModeratorAction.CONTINUE,
+                "CONVERGE": ModeratorAction.CONVERGE,
+                "ASK_USER": ModeratorAction.ASK_USER,
+                "EXTERNAL_CONSULT": ModeratorAction.EXTERNAL_CONSULT,
+            }
+            action = action_map.get(action_str, ModeratorAction.CONTINUE)
+
+            decision_kwargs = {"action": action, "reason": f"[LLM] {reason}"}
+
+            if action == ModeratorAction.ASK_USER:
+                decision_kwargs["question_to_user"] = response.get("question_to_user", "")
+
+            if action == ModeratorAction.EXTERNAL_CONSULT:
+                expert_id = response.get("consult_expert_id")
+                if expert_id:
+                    decision_kwargs["roster_change"] = RosterChangeRequest(
+                        external_consult=ExternalConsultationRequest(
+                            expert_id=ExpertId(expert_id),
+                            question=f"关于「{session.question}」，你的专业领域能提供什么独特视角？",
+                            context_summary=f"当前第{round_num}轮，近两轮发言：{' | '.join([s[:50] for s in statement_summaries[:3]])}",
+                            deadline_s=self._config.external_consultation_timeout_s,
+                            max_response_chars=2000,
+                        )
+                    )
+
+            logger.info(f"LLM moderator decision: {action.value} — {reason}")
+            return ModeratorDecision(**decision_kwargs)
+
+        except Exception as e:
+            logger.warning(f"LLM moderator decision failed, falling back to CONTINUE: {e}")
+            return ModeratorDecision(action=ModeratorAction.CONTINUE, reason=f"LLM failed: {e}")
 
     # -------------------------------------------------------------------------
     # 方法论乱用检测（§4.1 第3条：主持人怎么判断"用错了"）
