@@ -4,92 +4,9 @@
 
 **面向 AI 框架设计**：模块化、可扩展、按需加载，适合集成到各类 AI Agent 系统。
 
-**最新稳定版：v6 — 多 Agent 圆桌辩论系统**（2026-06）
+**[English](./README_EN.md) | [简体中文](./README.md)**
 
----
-
-## v6 多 Agent 圆桌辩论系统
-
-v6 是全新一代架构，从"单 Agent 多视角"升级为"多 Agent 真实辩论"。
-
-### 核心架构
-
-```
-用户问题
-    ↓
-┌──────────────────────────────────────────────────────────┐
-│  Moderator（主持人）                                      │
-│  - 解析问题类型 & 选择专家                                │
-│  - 构建论点菜单（Argument Menu）                          │
-│  - 仲裁专家发言、触发收敛判断                            │
-└──────────────────────────────────────────────────────────┘
-    ↓
-┌──────────────────────────────────────────────────────────┐
-│  ExpertPool（专家池）                                     │
-│  - 管理 52 位历史人物 + 19 个方法论框架                   │
-│  - LLM 驱动选择：每次选择最相关的 3-5 位专家               │
-│  - 支持主动补充（Free Addition）                          │
-└──────────────────────────────────────────────────────────┘
-    ↓
-┌──────────────────────────────────────────────────────────┐
-│  辩论循环（Debate Loop）                                 │
-│  初始陈述 → 辩论轮次 → 反驳 → 收敛检测 → 综合结论        │
-│  每轮：LLM 生成专家陈述 → Moderator 仲裁 → 收敛判断       │
-│  收敛触发条件：观点重叠度 / 论证相似度 / 轮次上限         │
-└──────────────────────────────────────────────────────────┘
-    ↓
-┌──────────────────────────────────────────────────────────┐
-│  Recorder（录音器）                                       │
-│  - 记录全部轮次、论点、共识/分歧点                        │
-│  - 支持 JSON 文件持久化                                   │
-│  - 统计分析：专家参与度、论点分布                        │
-└──────────────────────────────────────────────────────────┘
-    ↓
-┌──────────────────────────────────────────────────────────┐
-│  ExternalConsultation（外部咨询）                         │
-│  - 可在辩论前/中/后引入外部专业意见                      │
-│  - 扩展专家池，补充真实知识                              │
-└──────────────────────────────────────────────────────────┘
-```
-
-### v6 核心模块
-
-| 模块 | 文件 | 职责 |
-|------|------|------|
-| Orchestrator | `src/super_thinking/v6/orchestrator.py` | 辩论循环编排入口 |
-| ExpertPool | `src/super_thinking/v6/expert_pool.py` | 专家选择与管理 |
-| Moderator | `src/super_thinking/v6/moderator.py` | 主持人仲裁逻辑 |
-| Convergence | `src/super_thinking/v6/convergence.py` | 收敛检测器 |
-| Recorder | `src/super_thinking/v6/recorder/` | 辩论记录器 |
-| LLM | `src/super_thinking/v6/llm/` | LLM 驱动（OpenAI 兼容） |
-| CLI | `src/super_thinking/v6/cli/` | 命令行工具 |
-
-### v6 vs v5
-
-| 维度 | v5 | v6 |
-|------|----|----|
-| 架构 | 单 Agent 并行分析 | 多 Agent 真实辩论 |
-| 专家选择 | 固定配置 | LLM 动态选择 |
-| 发言顺序 | 并行同时 | 轮次顺序 |
-| 收敛判断 | 无 | 三指标量化判断 |
-| 主持人 | 无 | Moderator 全程仲裁 |
-| 记录 | 无 | 完整轮次录音 |
-| 外部意见 | 无 | ExternalConsultation |
-
-### v6 文档
-
-- [v6 架构文档](./v6_ARCHITECTURE.md)
-- [v6 接口规范](./v6_INTERFACES.md)
-- [v6 数据流](./v6_DATA_FLOW.md)
-- [v6 测试计划](./v6_TEST_PLAN.md)
-- [Moderator 设计](./MODERATOR.md)
-- [迁移指南](./v6_MIGRATION.md)
-
----
-
-## v5 双轨专家系统（稳定版）
-
-### 核心架构
+## 核心架构
 
 ```
 用户问题
@@ -336,18 +253,18 @@ Agent-superthinking/
 │   │   ├── conflict.py        # 冲突检测
 │   │   ├── consensus.py       # 共识提炼
 │   │   └── formatter.py       # 报告格式化
-│   ├── perspectives/          # 人物/方法论视角（v5）
-│   │   └── ...
-│   └── v6/                    # v6 多 Agent 辩论系统
-│       ├── orchestrator.py    # 辩论编排器
-│       ├── expert_pool.py     # 专家池
-│       ├── moderator.py       # 主持人
-│       ├── convergence.py     # 收敛检测
-│       ├── llm/               # LLM 驱动
-│       ├── recorder/         # 记录器
-│       └── cli/               # 命令行工具
+│   └── experts/               # 内置专家实现
+│       └── ...
 ├── experts/
 │   ├── people/                # 人物型专家（52位）
+│   │   ├── philosophy/        # 12位
+│   │   ├── science/           # 6位
+│   │   ├── psychology/        # 6位
+│   │   ├── economics/         # 6位
+│   │   ├── literature/        # 13位
+│   │   ├── military/          # 2位
+│   │   ├── math/             # 3位
+│   │   └── religion/           # 2位
 │   │   └── <name>-perspective/
 │   │       ├── SKILL.md       # OpenClaw Skill
 │   │       └── schema.json    # JSON Schema（跨框架）
@@ -356,7 +273,6 @@ Agent-superthinking/
 │           ├── SKILL.md       # OpenClaw Skill
 │           └── schema.json    # JSON Schema（跨框架）
 └── tests/
-    └── tests/v6/             # v6 测试套件
 ```
 
 ---
@@ -397,8 +313,6 @@ Agent-superthinking/
 
 | 版本 | 更新内容 |
 |------|---------|
-| **v6.0** | 多 Agent 圆桌辩论系统：Moderator + ExpertPool + LLM 驱动选择 + ConvergenceDetector + Recorder + ExternalConsultation；52人物 + 19方法论 |
-| v2.3 | 画像系统 + 反馈收集 + 路由优化 |
 | v2.0 | 双轨系统上线：52人物 + 19方法论 + JSON Schema 跨框架支持 |
 | v1.0 | 初始版本：18视角 |
 
