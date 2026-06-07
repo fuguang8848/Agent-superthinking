@@ -18,6 +18,7 @@ from typing import Optional, Any
 
 from super_thinking.core.registry import Registry, get_registry
 from super_thinking.core.router import Router, RoutingResult, get_router
+from super_thinking.core.llm_router import Recorder, get_recorder
 from super_thinking.perspectives._interface import Perspective, PerspectiveOutput
 from super_thinking.team import ContextBoard, TeamIntegration, ExpertStatus
 
@@ -57,6 +58,7 @@ class Jury:
         router: Optional[Router] = None,
         timeout_per_perspective: float = 60.0,
         max_workers: int = 4,
+        recorder: Optional[Recorder] = None,
     ):
         """
         Initialize the Jury.
@@ -66,11 +68,13 @@ class Jury:
             router: Router instance (creates default if None)
             timeout_per_perspective: Max seconds per perspective (default 60s)
             max_workers: Max parallel perspective executions (default 4)
+            recorder: Recorder instance for audit hooks (creates default if None)
         """
         self._registry = registry
         self._router = router
         self.timeout_per_perspective = timeout_per_perspective
         self.max_workers = max_workers
+        self._recorder = recorder
 
     @property
     def registry(self) -> Registry:
@@ -85,6 +89,13 @@ class Jury:
         if self._router is None:
             self._router = get_router(self._registry)
         return self._router
+
+    @property
+    def recorder(self) -> Recorder:
+        """Lazy-load recorder."""
+        if self._recorder is None:
+            self._recorder = get_recorder()
+        return self._recorder
 
     def think(
         self,
@@ -104,7 +115,16 @@ class Jury:
         Returns:
             JuryResult with all perspective outputs and error info
         """
+        import time
+        start_ms = time.time() * 1000
         context = context or {}
+
+        # Input validation
+        if len(input) > 10000:
+            input = input[:10000]
+            logger.warning("Jury: input truncated to 10000 chars")
+
+        self.recorder.record_jury_start(input, mode, selective_ids)
 
         # Route to determine which perspectives to activate
         routing_result = self.router.route(
@@ -150,7 +170,7 @@ class Jury:
                     errors[pid] = str(e)
                     logger.warning(f"Perspective {pid} failed: {e}")
 
-        return JuryResult(
+        result = JuryResult(
             outputs=outputs,
             errors=errors,
             routing_result=routing_result,
@@ -158,6 +178,9 @@ class Jury:
             successful=len(outputs),
             failed=len(errors),
         )
+        duration_ms = time.time() * 1000 - start_ms
+        self.recorder.record_jury_complete(result, duration_ms)
+        return result
 
     def _execute_perspective(
         self,

@@ -50,6 +50,11 @@ class Router:
         Returns:
             RoutingResult with activated perspectives and metadata
         """
+        # Input validation: truncate very long inputs
+        if len(input) > 5000:
+            input = input[:5000]
+            logger.warning("Router: input truncated to 5000 chars")
+
         if mode == "force_all":
             return self._route_force_all()
         elif mode == "selective":
