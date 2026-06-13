@@ -176,8 +176,8 @@ class Router:
             return None
 
     def _route_force_all(self) -> RoutingResult:
-        """Activate all enabled perspectives."""
-        enabled = self._registry.list_enabled()
+        """Activate all enabled perspectives. V 6/13 22:24 fix: 用 _reg property 替代 _registry (None 崩溃)."""
+        enabled = self._reg.list_enabled()  # 改: _registry → _reg (property 自动 discover)
         activated = [p.id for p in enabled]
 
         return RoutingResult(
@@ -188,8 +188,8 @@ class Router:
         )
 
     def _route_selective(self, selective_ids: list[str]) -> RoutingResult:
-        """Activate only specified perspectives."""
-        enabled = self._registry.list_enabled()
+        """Activate only specified perspectives. V 6/13 22:24 fix: 同上."""
+        enabled = self._reg.list_enabled()  # 改: _registry → _reg
         enabled_ids = {p.id for p in enabled}
 
         # Validate requested IDs
