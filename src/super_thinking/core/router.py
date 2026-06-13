@@ -46,6 +46,7 @@ class Router:
 
         if self._registry is None:
             self._registry = RegClass()
+            self._registry.discover()  # 确保专家被加载
         return self._registry
 
     def route(

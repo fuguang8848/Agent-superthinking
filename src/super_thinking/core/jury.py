@@ -78,9 +78,10 @@ class Jury:
 
     @property
     def registry(self) -> Registry:
-        """Lazy-load registry."""
+        """Lazy-load registry with auto-discovery."""
         if self._registry is None:
             self._registry = get_registry()
+            self._registry.discover()  # 确保专家被加载
         return self._registry
 
     @property
