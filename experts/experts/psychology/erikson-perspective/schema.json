@@ -1,0 +1,29 @@
+{
+  "name": "erikson-perspective",
+  "type": "methods",
+  "domain": "erikson",
+  "displayName": "erikson",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**阶段模型的理想化**：实际人生的发展轨迹比八阶段模型复杂得多，个体差异大",
+    "**西方中心主义残余**：虽然比弗洛伊德更具文化敏感性，但发展阶段的内容和时机仍是基于西方工业化社会的观察",
+    "**同一性概念的操作化困难**：难以精确测量同一性的形成程度",
+    "**忽视认知发展**：主要关注心理社会维度，对认知发展（皮亚杰的贡献）整合不足",
+    "**男性发展模型主导**：早期版本对女性同一性和发展的描述受到批评（批评来自卡罗尔·吉利根等）"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "erikson-perspective"
+  },
+  "version": "1.0.0"
+}

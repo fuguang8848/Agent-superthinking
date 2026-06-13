@@ -1,0 +1,23 @@
+{
+  "name": "萨丕尔-沃尔夫假说（Sapir-Whorf Hypothesis）",
+  "type": "methods",
+  "domain": "linguistics",
+  "displayName": "萨丕尔 沃尔夫假说（Sapir Whorf Hypothesis）",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "萨丕尔-沃尔夫假说（Sapir-Whorf Hypothesis）"
+  },
+  "version": "1.0.0"
+}

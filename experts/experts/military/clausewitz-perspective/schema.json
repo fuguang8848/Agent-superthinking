@@ -1,0 +1,29 @@
+{
+  "name": "clausewitz-perspective",
+  "type": "methods",
+  "domain": "clausewitz",
+  "displayName": "clausewitz",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**未完成的著作**：《战争论》只有前六卷完成，第七卷后是草稿和笔记。克劳塞维茨1831年死于霍乱，来不及系统整理",
+    "**时代局限**：克劳塞维茨的战争经验主要来自拿破仑战争时代，军事技术和战术与工业时代、核时代差异巨大",
+    "**普鲁士/德国中心视角**：克劳塞维茨的分析框架深受普鲁士军事传统影响，对海洋战略、游击战、民众战争的分析相对不足",
+    "**核时代的适用性**：《战争论》写于核武出现之前，核威慑逻辑与克劳塞维茨框架存在张力",
+    "**过度强调正规战争**：对叛乱、恐怖主义、非国家行为体的战略分析相对薄弱"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "clausewitz-perspective"
+  },
+  "version": "1.0.0"
+}

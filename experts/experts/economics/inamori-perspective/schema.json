@@ -1,0 +1,29 @@
+{
+  "name": "inamori-perspective",
+  "type": "methods",
+  "domain": "inamori",
+  "displayName": "inamori",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**文化特殊性**：稻盛哲学深深根植于日本商业文化（终身雇用、儒家伦理、佛教传统），直接移植到其他文化环境需要调适",
+    "**宗教性倾向**：稻盛哲学包含明显的宗教/哲学元素（因果、灵魂、报恩），对无神论者或世俗主义者可能显得过强",
+    "**成功者偏见**：稻盛引用的案例都是成功案例——他的哲学适合所有企业吗？失败案例怎么说？",
+    "**小规模适用性**：阿米巴经营在大企业有效，但在小微企业中可能过度复杂",
+    "**数字化时代挑战**：稻盛哲学诞生于制造业时代，在数字化转型中如何应用，需要新的诠释"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "inamori-perspective"
+  },
+  "version": "1.0.0"
+}

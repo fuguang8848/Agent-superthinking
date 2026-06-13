@@ -1,0 +1,23 @@
+{
+  "name": "criticalthinking-perspective",
+  "type": "methods",
+  "domain": "criticalthinking",
+  "displayName": "criticalthinking",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "criticalthinking-perspective"
+  },
+  "version": "1.0.0"
+}

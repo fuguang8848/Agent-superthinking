@@ -1,0 +1,29 @@
+{
+  "name": "hayek-perspective",
+  "type": "methods",
+  "domain": "hayek",
+  "displayName": "hayek",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**反干预的倾向性**：哈耶克对政府干预的批判有时过度，忽视了市场在垄断、外部性、公共品提供上的真实失灵",
+    "**商业周期理论争议**：奥地利学派商业周期理论在主流经济学界争议极大，并非共识",
+    "**对不平等的沉默**：哈耶克的框架对市场结果的不平等缺乏道德回应，只强调\"过程公正\"",
+    "**历史特殊性**：哈耶克写作于20世纪上半叶，其论证主要针对社会主义计划经济，与当代福利国家政策语境不同",
+    "**乌托邦成分**：哈耶克对\"自发秩序\"的赞美有时忽视其历史积累过程中的压迫、剥削和偶然性"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "hayek-perspective"
+  },
+  "version": "1.0.0"
+}

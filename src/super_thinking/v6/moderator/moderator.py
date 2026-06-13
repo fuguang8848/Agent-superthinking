@@ -1,0 +1,689 @@
+"""
+Moderator - 主持人模块
+
+实现 §2.7 方法论工具池、§2.3 主持人双重角色、§4.1 待定问题接口。
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field, replace
+from typing import Any, Protocol, runtime_checkable, TYPE_CHECKING
+import logging
+
+from ..types import (
+    DebateConfig, Expert, ExpertPool, ExpertStatement, ArgumentMenu,
+    ModeratorDecision, ModeratorAction, ConvergenceSignal, DebateSession,
+    RoundNumber, SessionStatus, UserQuestion, QuestionId, FinalConsensus,
+    ExternalConsultationRequest, ExpertId, RosterChangeRequest,
+    MethodologyResult, SpeakPrompt,
+)
+from ..methodology import MethodologyRegistry
+from ..session_recorder import SessionRecorder
+from ..external_consultation import ExternalConsultationManager
+from .argument_extractor import ArgumentExtractor
+from .menu_builder import MenuBuilder
+from .expert_selector import LLMExpertSelector
+
+if TYPE_CHECKING:
+    from ..llm.provider import LLMProvider
+
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# ModeratorConfig & Protocol
+# =============================================================================
+
+@dataclass(frozen=True, kw_only=True)
+class ModeratorConfig:
+    system_prompt_template: str = ""
+    decision_prompt_template: str = ""
+    use_llm_for_extraction: bool = True
+    use_llm_for_decision: bool = True
+    use_llm_for_selection: bool = True  # §2.5 动态专家池：LLM选择专家
+
+
+@runtime_checkable
+class Moderator(Protocol):
+    def select_initial_panel(self, question: str, context: dict) -> tuple[Expert, ...]: ...
+    def execute_round(self, session: DebateSession, round_number: RoundNumber, role: Any) -> tuple: ...
+    def build_menu(self, session: DebateSession, statements: tuple[ExpertStatement, ...]) -> ArgumentMenu: ...
+    def decide(self, session: DebateSession, last_signal: ConvergenceSignal | None) -> ModeratorDecision: ...
+    def format_final_consensus(self, session: DebateSession) -> FinalConsensus: ...
+    def ask_user(self, session: DebateSession, reason: str) -> UserQuestion: ...
+
+
+# =============================================================================
+# DefaultModerator
+# =============================================================================
+
+class DefaultModerator:
+    """
+    主持人实现。
+
+    §2.7 方法论工具池相关职责：
+    - 注入方法论提示（methodology_hints）到专家 prompt
+    - 收集上一轮方法论反馈（methodology_feedback）到本轮 prompt
+    - 检测方法论乱用（_validate_methodology_usage），将警告注入 statements
+
+    §2.3 主持人双重角色：
+    - 对内：组织辩论、整理论点、判断收敛
+    - 对外：通过 ExternalConsultationManager 私下咨询专家，完善综合判断
+    """
+
+    def __init__(
+        self,
+        *,
+        llm,
+        config: DebateConfig,
+        expert_pool: ExpertPool,
+        methodology_registry: MethodologyRegistry,
+        recorder: SessionRecorder,
+        moderator_config: ModeratorConfig | None = None,
+        consultation_manager: ExternalConsultationManager | None = None,
+    ):
+        self._llm = llm
+        self._config = config
+        self._expert_pool = expert_pool
+        self._methodology = methodology_registry
+        self._recorder = recorder
+        self._mod_config = moderator_config or ModeratorConfig()
+        self._extractor = ArgumentExtractor()
+        self._menu_builder = MenuBuilder()
+        self._consultation_manager = consultation_manager
+        self._expert_selector = LLMExpertSelector(expert_pool, llm)
+
+    # -------------------------------------------------------------------------
+    # 专家面板选择
+    # -------------------------------------------------------------------------
+
+    def select_initial_panel(self, question: str, context: dict) -> tuple[Expert, ...]:
+        """
+        选择初始专家面板。
+
+        §2.5：use_llm_for_selection=True 时用LLM语义分析选择专家，
+        否则退化为关键词匹配。
+        """
+        min_exp = self._config.min_initial_experts
+        max_exp = self._config.max_initial_experts
+
+        if self._mod_config.use_llm_for_selection:
+            selected = self._expert_selector.select(
+                question,
+                min_experts=min_exp,
+                max_experts=max_exp,
+            )
+            if selected:
+                return selected
+            # LLM失败时fallback到关键词
+            logger.warning("LLM expert selection returned empty, falling back to keyword")
+
+        # 关键词匹配兜底
+        suggested = self._expert_pool.suggest_for(
+            question, top_k=max_exp
+        )
+        if len(suggested) < min_exp:
+            all_exp = self._expert_pool.list_registered()
+            remaining = [e for e in all_exp if e not in suggested]
+            suggested = suggested + tuple(remaining[:min_exp - len(suggested)])
+        return tuple(suggested[:max_exp])
+
+    # -------------------------------------------------------------------------
+    # 论点菜单构建
+    # -------------------------------------------------------------------------
+
+    def build_menu(
+        self, session: DebateSession, statements: tuple[ExpertStatement, ...]
+    ) -> ArgumentMenu:
+        all_suggested = []
+        for stmt in statements:
+            all_suggested.extend(self._extractor.extract(stmt))
+
+        prev_menu = session.rounds[-1].menu if session.rounds else None
+        menu = self._menu_builder.build(
+            RoundNumber(len(session.rounds) + 1),
+            tuple(all_suggested),
+            prev_menu,
+        )
+        self._recorder.on_menu_built(menu)
+        return menu
+
+    # -------------------------------------------------------------------------
+    # 决策
+    # -------------------------------------------------------------------------
+
+    def decide(
+        self, session: DebateSession, last_signal: ConvergenceSignal | None
+    ) -> ModeratorDecision:
+        """
+        判断下一步主持人动作。
+
+        §2.3 主持人双重角色：
+        - use_llm_for_decision=True 时，LLM分析辩论状态后决定动作
+        - 硬编码规则（max_rounds/min_experts/converged）始终先检查，
+          排除无争议情况后，再进入LLM决策分支
+        """
+        current_round = len(session.rounds)
+
+        # 硬编码规则：任何情况下都要先检查这些
+        if current_round >= self._config.max_rounds:
+            return ModeratorDecision(
+                action=ModeratorAction.ENTER_FINAL, reason="Max rounds reached"
+            )
+
+        if last_signal and last_signal.converged:
+            return ModeratorDecision(
+                action=ModeratorAction.CONVERGE, reason="Convergence detected"
+            )
+
+        if len(session.active_experts) < self._config.min_experts_to_continue:
+            return ModeratorDecision(
+                action=ModeratorAction.ENTER_FINAL,
+                reason="Too few active experts",
+            )
+
+        # LLM决策分支：分析辩论状态，判断最优动作
+        if self._mod_config.use_llm_for_decision:
+            return self._decide_with_llm(session, last_signal)
+
+        return ModeratorDecision(action=ModeratorAction.CONTINUE, reason="Continue debate")
+
+    # --------------------------------------------------------------------------
+    # LLM仲裁决策（§2.3 主持人双重角色：对内组织辩论）
+    # --------------------------------------------------------------------------
+
+    def _decide_with_llm(
+        self, session: DebateSession, last_signal: ConvergenceSignal | None
+    ) -> ModeratorDecision:
+        """
+        用LLM分析辩论状态，决定主持人动作。
+
+        §2.3：当 use_llm_for_decision=True 时调用。
+        LLM综合以下信息判断：
+        - 当前轮次 / 已完成轮次
+        - 专家发言摘要
+        - 收敛信号（重叠率/密度/漂移）
+        - 主持人方法论建议（如果有）
+        - 外部咨询历史
+
+        输出 ModeratorDecision：
+        - CONTINUE: 继续辩论
+        - CONVERGE: 已有充分共识，结束辩论
+        - ASK_USER: 需要用户输入才能继续
+        - EXTERNAL_CONSULT: 缺少某个视角，发起外部咨询
+        """
+        # 构建决策上下文
+        round_num = len(session.rounds) + 1
+
+        # 收集近两轮发言摘要
+        statement_summaries = []
+        for rnd in session.rounds[-2:]:
+            for stmt in rnd.statements:
+                statement_summaries.append(
+                    f"[{stmt.expert_name}]({stmt.role.value}): "
+                    f"置信度={stmt.confidence} | "
+                    f"{stmt.content[:150]}..."
+                )
+
+        # 收敛信号详情
+        conv_info = "无"
+        if last_signal:
+            conv_info = (
+                f"综合得分={last_signal.overall_score:.3f} "
+                f"| 重叠率={last_signal.overlap:.3f} "
+                f"| 新论点密度={last_signal.new_arg_density:.3f} "
+                f"| 置信漂移={last_signal.confidence_drift:.3f}"
+            )
+
+        # 外部咨询历史
+        ext_consults = []
+        for ec in session.external_consultations[-3:]:
+            ext_consults.append(f"- [{ec.expert_id}]: {ec.response_text[:80]}...")
+
+        # 可用专家列表
+        available = []
+        for e in session.expert_pool.list_registered():
+            active_ids = {ae.id for ae in session.active_experts}
+            status = "参与中" if e.id in active_ids else "未参与"
+            available.append(f"- {e.name}({e.id}): {status}")
+
+        prompt = f"""你是辩论主持人。分析以下辩论状态，决定下一步动作。
+
+## 当前状态
+- 辩论问题：「{session.question}」
+- 当前轮次：第{round_num}轮（最多{self._config.max_rounds}轮）
+- 活跃专家：{[e.name for e in session.active_experts]}
+
+## 收敛信号
+{conv_info}
+
+## 近两轮专家发言
+"""
+        if statement_summaries:
+            prompt += "\n".join(statement_summaries)
+        else:
+            prompt += "（第1轮，尚未开始发言）"
+
+        if ext_consults:
+            prompt += f"\n\n## 外部咨询历史\n{'\n'.join(ext_consults)}"
+
+        prompt += f"""
+
+## 可用专家池
+{"\n".join(available)}
+
+## 可选动作
+- CONTINUE：继续辩论，让专家继续发言或反驳
+- CONVERGE：已有充分共识，可以结束辩论进入最终结论
+- ASK_USER：需要用户输入（比如用户视角、额外信息、仲裁意见）
+- EXTERNAL_CONSULT：当前专家组合缺少某个领域，需要私下咨询外部专家
+
+输出格式（严格JSON）：
+{{
+  "action": "CONTINUE|CONVERGE|ASK_USER|EXTERNAL_CONSULT",
+  "reason": "简短原因说明",
+  "question_to_user": "如果选ASK_USER，写出要问用户的具体问题",
+  "consult_expert_id": "如果选EXTERNAL_CONSULT，写出要咨询的专家ID"
+}}
+"""
+
+        try:
+            response = self._llm.complete_json(
+                prompt,
+                system="你是一个专业辩论主持人。输出严格JSON格式。",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "action": {"type": "string", "enum": ["CONTINUE", "CONVERGE", "ASK_USER", "EXTERNAL_CONSULT"]},
+                        "reason": {"type": "string"},
+                        "question_to_user": {"type": "string"},
+                        "consult_expert_id": {"type": "string"},
+                    },
+                    "required": ["action", "reason"],
+                },
+            )
+            action_str = response.get("action", "CONTINUE")
+            reason = response.get("reason", "LLM decision")
+
+            # 映射到 ModeratorAction
+            action_map = {
+                "CONTINUE": ModeratorAction.CONTINUE,
+                "CONVERGE": ModeratorAction.CONVERGE,
+                "ASK_USER": ModeratorAction.ASK_USER,
+                "EXTERNAL_CONSULT": ModeratorAction.EXTERNAL_CONSULT,
+            }
+            action = action_map.get(action_str, ModeratorAction.CONTINUE)
+
+            decision_kwargs = {"action": action, "reason": f"[LLM] {reason}"}
+
+            if action == ModeratorAction.ASK_USER:
+                decision_kwargs["question_to_user"] = response.get("question_to_user", "")
+
+            if action == ModeratorAction.EXTERNAL_CONSULT:
+                expert_id = response.get("consult_expert_id")
+                if expert_id:
+                    decision_kwargs["roster_change"] = RosterChangeRequest(
+                        external_consult=ExternalConsultationRequest(
+                            expert_id=ExpertId(expert_id),
+                            question=f"关于「{session.question}」，你的专业领域能提供什么独特视角？",
+                            context_summary=f"当前第{round_num}轮，近两轮发言：{' | '.join([s[:50] for s in statement_summaries[:3]])}",
+                            deadline_s=self._config.external_consultation_timeout_s,
+                            max_response_chars=2000,
+                        )
+                    )
+
+            logger.info(f"LLM moderator decision: {action.value} — {reason}")
+            return ModeratorDecision(**decision_kwargs)
+
+        except Exception as e:
+            logger.warning(f"LLM moderator decision failed, falling back to CONTINUE: {e}")
+            return ModeratorDecision(action=ModeratorAction.CONTINUE, reason=f"LLM failed: {e}")
+
+    # -------------------------------------------------------------------------
+    # 方法论乱用检测（§4.1 第3条：主持人怎么判断"用错了"）
+    # -------------------------------------------------------------------------
+
+    def _validate_methodology_usage(
+        self, statements: tuple[ExpertStatement, ...]
+    ) -> tuple[ExpertStatement, ...]:
+        """
+        检查每位专家的方法论调用是否适用于其论点。
+
+        §4.1 第3条实现：主持人有权提示"这个方法论不适用于当前的论点"。
+
+        基于关键词匹配（MethodologyRegistry.validate_methodology_usage）：
+        - 如果 claim 中不包含该方法论关键词，返回警告
+        - 警告注入到 statement.warnings 中，供后续 prompt 使用
+
+        Args:
+            statements: 本轮所有专家发言
+
+        Returns:
+            更新了 warnings 字段的 statements tuple
+        """
+        validated = []
+        for stmt in statements:
+            if stmt.methodology_call is None:
+                validated.append(stmt)
+                continue
+
+            method_id = stmt.methodology_call.method_id
+            claim = stmt.content  # 用发言全文作为 claim
+
+            is_valid, reason = self._methodology.validate_methodology_usage(
+                method_id, claim
+            )
+
+            if is_valid:
+                validated.append(stmt)
+            else:
+                # 方法论乱用，注入警告
+                warnings = stmt.warnings + (
+                    f"[方法论警告] 你使用的 {method_id} 在当前论点中缺乏适用依据：{reason}",
+                )
+                stmt = replace(stmt, warnings=warnings)
+                validated.append(stmt)
+                logger.info(
+                    f"Methodology misuse detected: expert={stmt.expert_id} "
+                    f"method={method_id} reason={reason}"
+                )
+
+        return tuple(validated)
+
+    # -------------------------------------------------------------------------
+    # 从上一轮收集方法论反馈（§4.1 第4条：方法论输出怎么反馈给专家）
+    # -------------------------------------------------------------------------
+
+    def _collect_methodology_feedback(
+        self, session: DebateSession
+    ) -> tuple[MethodologyResult, ...]:
+        """
+        收集上一轮所有方法论结果，组成反馈列表注入本轮 prompt。
+
+        §4.1 第4条实现：方法论输出反馈给专家 → 注入 SpeakPrompt.methodology_feedback。
+
+        反馈包括：
+        - verdict（confirmed/questionable/rejected）
+        - findings（发现的问题）
+        - reframed_claim（重新表述）
+        - confidence_impact（置信度影响）
+        """
+        if not session.rounds:
+            return ()
+
+        last_round = session.rounds[-1]
+        feedback: list[MethodologyResult] = []
+
+        for stmt in last_round.statements:
+            if stmt.methodology_result is not None:
+                feedback.append(stmt.methodology_result)
+
+        return tuple(feedback)
+
+    # -------------------------------------------------------------------------
+    # 生成方法论提示（§4.1 第2条：系统怎么注入方法论视角）
+    # -------------------------------------------------------------------------
+
+    def _build_methodology_hints(self, session: DebateSession) -> tuple[str, ...]:
+        """
+        根据当前辩论态势，推荐适用的方法论，生成提示文本。
+
+        §4.1 第2条实现：系统注入方法论视角 → 在 prompt 中提示可用方法论。
+        """
+        if not session.question:
+            return ()
+
+        # 用问题查询推荐方法论
+        suggested = self._methodology.suggest_for(session.question, top_k=3)
+        if not suggested:
+            return ()
+
+        hints = [
+            f"【方法论提示】当前议题可能适合使用: {', '.join(p.display_name for p in suggested)}"
+        ]
+        return tuple(hints)
+
+    # -------------------------------------------------------------------------
+    # 生成方法论工具池文本块
+    # -------------------------------------------------------------------------
+
+    def _get_methodology_pool_block(self) -> str:
+        """获取完整方法论工具池描述，注入到首次 prompt。"""
+        return self._methodology.get_methodology_prompt_block()
+
+    # -------------------------------------------------------------------------
+    # 执行单轮辩论
+    # -------------------------------------------------------------------------
+
+    def execute_round(
+        self,
+        session: DebateSession,
+        round_number: RoundNumber,
+        role: Any,
+    ) -> tuple:
+        """
+        执行一轮辩论。
+
+        §2.7 方法论工具池流程：
+        1. 收集上一轮方法论反馈 → 注入本轮 prompt.methodology_feedback
+        2. 注入方法论提示（methodology_hints）
+        3. 方法论乱用检测（_validate_methodology_usage）→ 注入 warnings
+
+        Returns:
+            tuple: (Round object, success: bool)
+        """
+        import time as time_module
+
+        started_at = time_module.time()
+
+        prev_menu = session.rounds[-1].menu if session.rounds else None
+        is_initial = role.value == "initial" if hasattr(role, 'value') else False
+
+        # §4.1 第2条：系统注入方法论视角
+        methodology_hints = self._build_methodology_hints(session)
+
+        # §4.1 第4条：收集上一轮方法论输出 → 反馈给专家
+        methodology_feedback = self._collect_methodology_feedback(session)
+
+        # 获取方法论工具池文本块（仅首次）
+        methodology_pool_block = self._get_methodology_pool_block() if is_initial else ""
+
+        statements: list = []
+
+        for expert in session.active_experts:
+            # 构建 prompt
+            prompt = SpeakPrompt(
+                session_id=session.session_id,
+                round_number=round_number,
+                role=role,
+                question=session.question,
+                argument_menu=prev_menu,
+                methodology_hints=methodology_hints,
+                methodology_feedback=methodology_feedback,
+            )
+
+            # 如果有方法论工具池文本块，附加到 extra
+            if methodology_pool_block:
+                prompt = replace(
+                    prompt,
+                    extra={**prompt.extra, "methodology_pool_block": methodology_pool_block},
+                )
+
+            try:
+                stmt = expert.speak(prompt)
+                statements.append(stmt)
+            except Exception as e:
+                logger.error(f"Expert {getattr(expert, 'id', '?')} failed to speak: {e}")
+
+        statements = tuple(statements)
+
+        # §4.1 第3条：检测方法论是否被乱用
+        statements = self._validate_methodology_usage(statements)
+
+        # 构建论点菜单
+        menu = self.build_menu(session, statements)
+
+        # 计算收敛信号
+        from ..convergence import DefaultConvergenceDetector
+
+        detector = DefaultConvergenceDetector(self._config.convergence)
+        signal = detector.detect(
+            round_number=round_number,
+            current_menu=menu,
+            previous_menu=prev_menu,
+            statements=statements,
+        )
+
+        ended_at = time_module.time()
+
+        round_obj = Round(
+            round_number=round_number,
+            menu=menu,
+            statements=statements,
+            convergence_signal=signal,
+            moderator_decision=None,
+            started_at=started_at,
+            ended_at=ended_at,
+        )
+
+        return round_obj, True
+
+    # -------------------------------------------------------------------------
+    # 最终结论合成（§2.10 三层信息源）
+    # -------------------------------------------------------------------------
+
+    def format_final_consensus(self, session: DebateSession) -> FinalConsensus:
+        """
+        按 §2.10 三层信息源生成最终结论：
+        1. 会议结论（共识点 + 分歧点 + 未解决矛盾）
+        2. 各专家最终观点（via final_stmts）
+        3. 外部咨询观点（via session.external_consultations）
+        """
+        all_args = [arg for r in session.rounds for arg in r.menu.items]
+        consensus = [a.claim for a in all_args if a.confidence >= 0.7]
+        divergence = [
+            a.claim for a in all_args
+            if a.confidence < 0.5 and a.status.value == "active"
+        ]
+        root_contradictions = tuple(
+            a.claim for a in all_args
+            if a.status.value == "active" and a.confidence < 0.6
+        )
+        suggestions = []
+        if consensus:
+            suggestions.append("专家们在部分问题上已达成共识")
+        if divergence:
+            suggestions.append("仍存在核心分歧，建议进一步探讨")
+        if len(session.rounds) >= self._config.max_rounds:
+            suggestions.append("已达到最大轮次限制，请综合各方观点做出判断")
+        # 外部咨询观点（§2.10 三层信息源之一）
+        external_views = tuple(
+            ec.response_text
+            for ec in session.external_consultations
+            if ec.response_text and not ec.timed_out
+        )
+        return FinalConsensus(
+            consensus_points=tuple(dict.fromkeys(consensus)),
+            divergence_points=tuple(dict.fromkeys(divergence)),
+            root_contradictions=root_contradictions,
+            suggestions=tuple(suggestions),
+            final_stmts=session.final_stmts,
+            external_views=external_views,
+        )
+
+    # -------------------------------------------------------------------------
+    # 询问用户（§2.9 + §4.5）
+    # -------------------------------------------------------------------------
+
+    def ask_user(self, session: DebateSession, reason: str) -> UserQuestion:
+        """
+        生成向用户询问的标准格式问题（§2.9 + §4.5）。
+
+        当主持人判断分歧无法收敛时，生成包含以下内容的结构化询问：
+        1. 当前辩论状态摘要（核心问题、已收敛的分歧点）
+        2. 具体补充请求
+        """
+        import time as _time
+
+        last_round = session.rounds[-1] if session.rounds else None
+        last_menu = last_round.menu if last_round else None
+
+        if last_menu:
+            all_args = list(last_menu.items) + list(last_menu.converged)
+            consensus_claims = [a.claim for a in all_args if a.confidence >= 0.7]
+            divergence_claims = [
+                a.claim for a in last_menu.active() if a.confidence < 0.6
+            ]
+        else:
+            consensus_claims, divergence_claims = [], []
+
+        specific_questions = []
+        for claim in divergence_claims[:3]:
+            truncated = claim[:40] + ("..." if len(claim) > 40 else "")
+            specific_questions.append(
+                "关于「{}」，您有什么具体的判断标准或事实依据？".format(truncated)
+            )
+        specific_questions.append(
+            "您是否了解任何可能影响当前辩论的外部因素或背景信息？"
+        )
+
+        lines = ["## 当前辩论状态摘要"]
+        q_short = session.question
+        if len(q_short) > 50:
+            q_short = q_short[:50] + "..."
+        lines.append("- **核心问题**：{}".format(q_short))
+        lines.append(
+            "- **已收敛的论点**：{}".format(
+                consensus_claims[0] if consensus_claims else "暂无"
+            )
+        )
+        lines.append(
+            "- **未解决的核心争议**：{}".format(
+                divergence_claims[0] if divergence_claims else "暂无"
+            )
+        )
+        lines.append("")
+        lines.append("## 请您补充")
+        lines.append("专家们在上述问题上存在较大分歧，需要您提供更多信息：")
+        for i, q_text in enumerate(specific_questions, 1):
+            lines.append("{}. {}".format(i, q_text))
+
+        if reason:
+            lines.insert(0, '**原因**：{}\n'.format(reason))
+
+        return UserQuestion(
+            question_id=QuestionId(
+                "Q-{}-{}-{}".format(
+                    session.session_id, len(session.rounds), _time.time_ns()
+                )
+            ),
+            text="\n".join(lines),
+            options=("继续辩论", "结束辩论", "提供补充信息"),
+            triggered_by="moderator_divergence",
+            context={
+                "session_id": session.session_id,
+                "round": len(session.rounds),
+                "consensus_count": len(consensus_claims),
+                "divergence_count": len(divergence_claims),
+            },
+        )
+
+
+# =============================================================================
+# Exports
+# =============================================================================
+
+Moderator = DefaultModerator
+ModeratorImpl = DefaultModerator
+
+
+def create_moderator(*, llm, config, expert_pool, methodology_registry, recorder,
+                       consultation_manager: ExternalConsultationManager | None = None):
+    return DefaultModerator(
+        llm=llm,
+        config=config,
+        expert_pool=expert_pool,
+        methodology_registry=methodology_registry,
+        recorder=recorder,
+        consultation_manager=consultation_manager,
+    )

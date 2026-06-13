@@ -1,47 +1,14 @@
 ---
-name: autonomous-ai-agents:superthinking
+name: ce:superthinking
 description: |
-  多维度思考框架 v6。具备自我优化能力的 AI 思考系统。
-  问题 → 超级大脑分解 → 多专家协作 → 综合报告 → 经验闭环 → 下次更精准。
-  触发词：思考、分析、深度分析、多视角、多维分析、复杂问题
+  多维度思考框架 v5。具备自我优化能力的AI思考系统。问题 → 读取用户画像 → 智能路由 → 追问 → 分析 → 多维反馈 → 画像更新 → 下次更精准。
+  触发词：思考、分析、深度分析、多视角、多维分析
   适用场景：复杂问题、重大决策、风险评估、创意突破、人生困惑
 ---
 
-# ⚔️ 超思考 · 自优化专家系统 v6
+# ⚔️ 超思考 · 自优化专家系统 v5
 
 > 不同领域的思想家看待同一个问题，结论往往不同——这种差异本身就是洞察的来源。
-
----
-
-## v6 新增：超级大脑 + 团队协作
-
-```
-用户问题
-    ↓
-┌─────────────────────────────────────────┐
-│  超级大脑层（Supervisor Layer）          │
-│  Step 1: 复杂度判断 → 决定是否分解      │
-│  Step 2: 问题分类（职业/人生/情感/创业） │
-│  Step 3: 专家组合模板 + 画像调整         │
-│  Step 4: 分解为专家子任务 DAG            │
-└─────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────┐
-│  团队协作层（Team Layer）                │
-│  Step 5: 各专家注册 ContextBoard        │
-│  Step 6: 发布进度 / 洞察 / 结论         │
-│  Step 7: 其他专家感知已有结论深化分析    │
-└─────────────────────────────────────────┘
-    ↓
-综合报告 + 经验捕获 → 经验闭环 → 下次更准
-```
-
-**v6 核心升级：**
-- **超级大脑（SupervisorAdapter）**：将复杂问题分解为专家子任务 DAG，并行执行不同视角簇
-- **团队协作（TeamIntegration）**：ContextBoard 机制让各专家视角共享上下文
-- **经验闭环（LearningsIntegration）**：捕获交互经验，优化下次专家选择
-
----
 
 ## 核心架构：反馈闭环
 
@@ -50,10 +17,11 @@ description: |
     ↓
 ┌─────────────────────────────────────────┐
 │  学习层（Learning Layer）               │
+│                                         │
 │  Step 1: 读取用户画像                  │
 │  Step 2: 基于画像 + 初步路由           │
-│  Step 3: 智能推荐（画像权重调整）      │
-│  Step 4: 追问获取上下文               │
+│  Step 3: 智能推荐（画像权重调整）     │
+│  Step 4: 追问获取上下文                │
 └─────────────────────────────────────────┘
     ↓
 用户选择轨别和粒度
@@ -63,140 +31,226 @@ description: |
 综合报告
     ↓
 ┌─────────────────────────────────────────┐
-│  反馈层（Feedback Layer）               │
+│  反馈层（Feedback Layer）                 │
+│                                         │
 │  Step 5: 多维反馈收集                  │
 │  Step 6: 画像更新                      │
-│  Step 7: 组合效果追踪                 │
+│  Step 7: 组合效果追踪                  │
 └─────────────────────────────────────────┘
     ↓
 下次路由时读取更新后的画像 → 更精准的推荐
 ```
 
----
-
-## 专家体系
-
-40 位专家，3 类来源：
-
-| 类型 | 数量 | 说明 |
-|------|------|------|
-| 本地人物 | 30 | 哲学/科学/心理/经济/文学/军事/数学/宗教 |
-| 方法论框架 | 13 | 复杂系统/博弈论/贝叶斯/信息论等 |
-| 外部引用 | 10 | 马斯克/纳瓦尔/芒格/费曼等 |
-
-专家索引：`INDEX.md`（人物）+ `INDEX_METHODS.md`（方法论）
+**v5 核心升级：**
+- **反馈闭环**：用户评价 → 画像更新 → 下次推荐更准
+- **用户画像**：记忆偏好、问题模式、专家组合效果
+- **智能推荐**：基于画像动态调整专家权重
+- **自优化**：系统从每次交互中学习
 
 ---
 
-## 路由模式
+## 用户画像（Profile）
 
-| 模式 | 说明 |
-|------|------|
-| `auto` | 关键词匹配触发（默认） |
-| `force_all` | 激活所有已启用专家 |
-| `selective` | 指定专家 ID |
-
----
-
-## 核心组件
-
-### 1. SupervisorAdapter（超级大脑，问题分解）
-- 文件：`src/super_thinking/orchestrator/supervisor_adapter.py`
-- 职责：将复杂问题分解为专家子任务 DAG，按复杂度选择并行策略
-- 核心方法：`decompose(question, user_id=...)` → `DecomposedQuestion`
-- 关键类：`QuestionComplexity`（SIMPLE/MODERATE/COMPLEX/CRITICAL）
-- 专家组合模板：按问题类型预定义 required + optional 专家
-
-### 2. TeamIntegration（团队协作，ContextBoard）
-- 文件：`src/super_thinking/team/team_integration.py`
-- 职责：多专家协作管理层，发布进度/洞察/结论，其他专家可感知深化
-- 核心方法：`publish_start()` / `publish_insight()` / `publish_concluded()`
-- 协作阶段：`THINKING` → `CONCLUDED` / `WAITING` / `REVIEWING`
-
-### 3. LearningsIntegration（经验闭环）
-- 文件：`src/super_thinking/learnings/learnings_integration.py`
-- 职责：捕获分析经验，追踪专家组合效果，晋升高价值经验到 SOUL.md
-- 核心方法：`capture_analysis_result()` / `get_tips_for_question_type()` / `check_promotions()`
-- 晋升规则：某组合使用 ≥5 次且评分 ≥4 → 自动写入 SOUL.md
-
-### 4. Router（路由层）
-- 文件：`src/super_thinking/core/router.py`
-- 职责：根据输入匹配专家，返回 `RoutingResult`
-- **v5 升级**：集成 ProfileManager，路由时读取用户画像调整专家权重
-
-### 5. Jury（协调层）
-- 文件：`src/super_thinking/core/jury.py`
-- 职责：并行执行多个专家视角，结果聚合
-- **v5 升级**：集成 FeedbackCollector，分析后自动生成追问提示
-- **v6 升级**：新增 `think_complex()` 方法，集成 Supervisor + Team + Learnings
-- 关键方法：
-  - `think(input, user_id=...)` → 标准多视角分析（v5）
-  - `think_complex(question, user_id, team, learnings)` → 复杂问题模式（v6）
-
-### 6. ProfileManager（用户画像管理器）
-- 文件：`src/learning/profile_manager.py`
-- 职责：画像 CRUD、问题分类、基于画像的推荐
-
-### 7. FeedbackCollector（反馈收集器）
-- 文件：`src/learning/feedback_collector.py`
-- 职责：收集多维度反馈，验证完整性
-
-### 8. RoutingOptimizer（路由优化器）
-- 文件：`src/learning/routing_optimizer.py`
-- 职责：基于反馈调整专家权重，推荐最佳组合
-
----
-
-## 用户画像
+### 数据结构
 
 ```yaml
 user_profile:
-  user_id: string
-  name: string
-  created_at: timestamp
-  updated_at: timestamp
-
-  feedback_history: [...]
+  # 基础信息
+  user_id: "youyou"
+  name: "优优"
+  created_at: "2026-05-17"
+  updated_at: "2026-05-17T11:24:00Z"
+  
+  # 反馈历史
+  feedback_history:
+    - timestamp: "2026-05-17T11:24:00Z"
+      question: "人生的意义是什么"
+      question_type: "人生困惑"
+      experts_used: ["尼采", "加缪", "萨特", "庄子", "佛陀"]
+      rating: 4
+      useful_experts: ["尼采", "加缪"]
+      missing_experts: []
+      context: "30岁，感觉定型了"
+      
+  # 专家偏好
   expert_preferences:
-    "尼采":
-      score: 0.8     # -1到1
+    尼采:
+      score: 0.8      # -1到1，0.8=很喜欢
       use_count: 5
       success_count: 4
+    佛陀:
+      score: -0.2    # 负数=不太喜欢
+      use_count: 2
+      success_count: 1
+      
+  # 问题类型模式
   question_patterns:
-    "职业发展":
+    - pattern: "人生困惑"
+      keywords: ["意义", "人生", "活着的目的"]
+      preferred_experts: ["尼采", "加缪", "萨特"]
       count: 3
-      preferred_experts: ["芒格", "纳瓦尔"]
+        
+    - pattern: "职业选择"
+      keywords: ["工作", "跳槽", "转行", "职业"]
+      preferred_experts: ["芒格", "纳瓦尔", "马斯克"]
+      count: 2
+      
+  # 专家组合效果
   expert_combinations:
-    "芒格+纳瓦尔":
+    - experts: ["尼采", "加缪", "萨特"]
+      success_rate: 0.85
+      total_count: 4
+      best_contexts: ["30岁危机", "意义困惑"]
+      
+    - experts: ["芒格", "纳瓦尔"]
       success_rate: 0.9
       total_count: 5
-  routing_weights:
-    default_weights: {...}
-    personal_adjustments: {...}
+      best_contexts: ["创业决策", "职业选择"]
+```
+
+### 画像更新逻辑
+
+```
+收到反馈 → 提取关键词 → 更新对应字段
+
+评分 ≥ 4:
+  → 专家分数 +0.1
+  → 组合成功率 +0.05
+  → 问题模式 count +1
+
+评分 ≤ 2:
+  → 专家分数 -0.2
+  → 组合成功率 -0.1
+  → 触发追问："你觉得哪个视角不对？"
 ```
 
 ---
 
-## config.yaml 更新方法
+## 完整流程
 
-当前 `enabled_perspectives` 中的测试视角（`generated_*`, `test_*`）可替换为真实专家视角：
+### Step 1: 读取用户画像
 
-```bash
-# 查看所有可用的专家视角
-cd /home/fuguang/Agent-superthinking
-python3 -c "
-import sys; sys.path.insert(0, 'src')
-from super_thinking.core.registry import Registry
-r = Registry()
-all_ids = [p.id for p in r.list_all()]
-enabled = [p.id for p in r.list_enabled()]
-print('All:', all_ids)
-print('Enabled:', enabled)
-"
+读取该用户的 profile（首次为空则创建默认）
 
-# 更新 config.yaml（将 your_perspective_id 替换为真实 ID）
-# 建议保留 meta_thinking 用于元认知
+### Step 2: 初步路由 + 画像调整
+
 ```
+问题："30岁要不要跳槽"
+
+初步路由：哲学团、战略决策团、博弈论
+
+画像调整：
+- 用户过去职业类问题偏好：芒格(+0.3)、纳瓦尔(+0.3)
+- 芒格历史成功率：0.9 → 提升推荐权重
+- 佛陀历史评分：-0.2 → 降低推荐权重
+
+调整后推荐：
+优先级1：战略决策团（芒格、纳瓦尔、马斯克）
+优先级2：哲学团（尼采、萨特）
+优先级3：博弈论
+```
+
+### Step 3: 展示路由结果 + 追问
+
+```
+┌─────────────────────────────────────────────────┐
+│  基于你的画像，推荐如下：                         │
+│                                                 │
+│  问题类型：职业选择                              │
+│  涉及专家团：战略决策团（强推荐）、哲学团        │
+│                                                 │
+│  画像提示：                                      │
+│  - 你之前职业问题用芒格/纳瓦尔效果很好（90%成功率）│
+│  - 哲学团在人生困惑类问题表现好                  │
+│                                                 │
+│  请选择轨别：                                    │
+│  [1] 战略决策团（推荐）                         │
+│  [2] 双轨组合（战略+哲学）                       │
+│  [3] 自定义                                    │
+└─────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────┐
+│  补充背景：                                      │
+│                                                 │
+│  1. 你是想离开现有工作，还是有更好的机会？        │
+│  2. 跳槽最让你纠结的是什么？                      │
+│                                                 │
+│  [直接输入背景，或跳过]                           │
+└─────────────────────────────────────────────────┘
+```
+
+### Step 4: 用户选择 + 回答背景
+
+### Step 5: 专家分析
+
+### Step 6: 多维反馈收集
+
+```
+┌─────────────────────────────────────────────────┐
+│  分析完成！请帮助改进：                          │
+│                                                 │
+│  1. 总体评分（1-5）：___                        │
+│                                                 │
+│  2. 哪些视角最有帮助？                           │
+│     （如：芒格的激励分析、纳瓦尔的杠杆思维）     │
+│                                                 │
+│  3. 哪些视角缺失或不够深入？                     │
+│                                                 │
+│  4. 这次分析结合你的背景了吗？                   │
+│     （1=完全没用，5=非常精准）___                │
+│                                                 │
+│  5. 其他建议：                                  │
+└─────────────────────────────────────────────────┘
+```
+
+### Step 7: 画像更新
+
+收到反馈后：
+1. 解析评分 → 更新各专家分数
+2. 记录有用/缺失专家 → 更新偏好
+3. 记录组合 → 更新成功率
+4. 记录问题关键词 → 更新问题模式
+
+---
+
+## 自优化机制
+
+### 组合效果追踪
+
+每次分析记录使用的专家组合 + 评分：
+```
+["芒格", "纳瓦尔"] + 用户评分5 → 成功率 0.9
+["尼采", "佛陀"] + 用户评分2 → 成功率 0.3
+```
+
+下次遇到类似上下文，优先推荐成功率高的组合。
+
+### 专家动态权重
+
+```
+权重计算：
+final_weight = base_weight × context_modifier × profile_modifier
+
+base_weight:      基础权重（问题匹配度）
+context_modifier: 上下文调整（"30岁"→ 人生/职业权重↑）
+profile_modifier: 画像调整（用户历史评分）
+```
+
+### 问题模式学习
+
+用户反复问某类问题 → 系统学习该类问题的最佳专家组合
+
+---
+
+## 与旧版区别
+
+| 维度 | v4 | v5 |
+|------|-----|-----|
+| 用户画像 | 无 | 有，记录偏好 |
+| 反馈闭环 | 无 | 有，画像自动更新 |
+| 智能推荐 | 基于问题 | 基于问题+画像 |
+| 自优化 | 无 | 有，组合效果追踪 |
+| 推荐精准度 | 60% | 预期85%+ |
 
 ---
 
@@ -204,219 +258,39 @@ print('Enabled:', enabled)
 
 ```
 Agent-superthinking/
-├── SKILL.md              # 本文件
-├── INDEX.md              # 人物专家索引（路由真相源）
-├── INDEX_METHODS.md      # 方法论框架索引
-├── LEARNING.md           # 自优化系统架构
-├── PROFILE_SCHEMA.md     # 画像数据结构
-├── PROFILES.md           # 用户画像使用指南
+├── SKILL.md                    # 本文件
+├── LEARNING.md                 # 自优化系统架构
+├── PROFILE_SCHEMA.md          # 用户画像数据结构
+├── INDEX_PEOPLE.md
+├── INDEX_METHODS.md
+├── SCHEMA.md
+├── README.md
+├── LICENSE
+├── profiles/                   # 用户画像存储
+│   └── youyou.json           # 示例用户画像
 ├── src/
-│   ├── learning/         # 自优化层
-│   │   ├── profile_manager.py
-│   │   ├── feedback_collector.py
-│   │   ├── routing_optimizer.py
-│   │   └── expert_combination_tracker.py
-│   ├── super_thinking/
-│   │   ├── core/
-│   │   │   ├── router.py      # 路由层
-│   │   │   ├── registry.py
-│   │   │   └── jury.py        # 协调层（含 v6 think_complex）
-│   │   ├── orchestrator/
-│   │   │   └── supervisor_adapter.py  # v6 超级大脑
-│   │   ├── team/
-│   │   │   └── team_integration.py    # v6 团队协作
-│   │   ├── learnings/
-│   │   │   └── learnings_integration.py  # v6 经验闭环
-│   │   └── perspectives/       # 专家视角实现
-│   └── learning/              # learning 层入口
-└── experts/              # 专家知识库（MD 文件）
+│   └── super_thinking/
+│       ├── __init__.py
+│       ├── core/
+│       │   ├── router.py
+│       │   └── jury.py
+│       ├── learning/        # ← 新增自优化模块
+│       │   ├── __init__.py
+│       │   ├── profile_manager.py
+│       │   ├── feedback_collector.py
+│       │   └── routing_optimizer.py
+│       └── fusion/
+│           ├── conflict.py
+│           ├── consensus.py
+│           └── formatter.py
+└── experts/
+    ├── people/
+    └── methods/
 ```
 
 ---
 
-## 使用示例
-
-### v5 标准模式（think）
-
-```python
-import sys
-sys.path.insert(0, '/home/fuguang/Agent-superthinking/src')
-
-from super_thinking.core.jury import Jury, get_jury
-from super_thinking.core.router import get_router
-from learning import ProfileManager, FeedbackCollector
-
-# 初始化（完整集成版）
-pm = ProfileManager('/home/fuguang/Agent-superthinking/profiles/')
-fc = FeedbackCollector()
-jury = get_jury(profile_manager=pm, feedback_collector=fc)
-
-# Step 1: 分析
-result = jury.think("30岁要不要跳槽？", user_id="default")
-print(f"激活专家: {result.analysis_metadata['experts_used']}")
-print(f"问题类型: {result.analysis_metadata['question_type']}")
-
-# Step 2: 追问（打印 followup_prompt 让用户评价）
-print("追问提示:", result.followup_prompt)
-
-# Step 3: 提交反馈 → 画像更新
-feedback_result = jury.submit_feedback("default", {
-    "analysis_metadata": result.analysis_metadata,
-    "user_response": "评分4，尼采和加缪的视角最有帮助，缺少商业视角"
-})
-print("画像更新:", feedback_result)
-
-# 下次路由时，尼采/加缪权重自动提升
-result2 = jury.think("人生的意义是什么？", user_id="default")
-print(f"路由调整: {result2.routing_result.reason}")
-```
-
-### v6 超级大脑模式（think_complex）
-
-```python
-import sys
-sys.path.insert(0, '/home/fuguang/Agent-superthinking/src')
-
-from super_thinking.core.jury import Jury, get_jury
-from super_thinking.core.router import get_router
-from super_thinking.orchestrator import SupervisorAdapter
-from super_thinking.team import TeamIntegration
-from super_thinking.learnings import LearningsIntegration
-from learning import ProfileManager
-
-# 初始化
-pm = ProfileManager('/home/fuguang/Agent-superthinking/profiles/')
-jury = get_jury(profile_manager=pm)
-team = TeamIntegration()
-learnings = LearningsIntegration()
-
-# 超级大脑模式：复杂问题分解 + 多专家协作 + 经验闭环
-result = jury.think_complex(
-    question="40岁职场人，创业还是继续打工？",
-    user_id="default",
-    team=team,
-    learnings=learnings,
-)
-
-# 打印分解计划
-plan = result["decomposed_plan"]
-print(f"问题类型: {plan['question_type']}")
-print(f"复杂度: {plan['complexity']}")
-print(f"分解为 {len(plan['subtasks'])} 个子任务")
-print(f"执行层级: {plan['execution_layers']}")
-
-# 打印团队协作摘要
-board = result["team_session"]
-print(f"团队进度: {board['progress']}")
-print(f"各阶段专家: {board['by_phase']}")
-
-# 打印综合报告摘要
-synthesis = result["synthesis"]
-print(f"关键角度: {synthesis['key_angles']}")
-print(f"警示思维陷阱: {synthesis['warnings']}")
-
-# 打印经验捕获结果
-if result["learnings"]:
-    print(f"经验提示: {result['learnings']['tip']}")
-```
-
-### 单独使用 SupervisorAdapter
-
-```python
-from super_thinking.orchestrator import SupervisorAdapter
-
-adapter = SupervisorAdapter()
-plan = adapter.decompose("要不要转行做AI？", user_id="default")
-
-print(f"复杂度: {plan.complexity.value}")
-print(f"问题类型: {plan.question_type}")
-print(f"专家组合: {[st.expert_name for st in plan.subtasks]}")
-print(f"执行层级: {plan.execution_layers}")
-print(f"关键角度: {plan.key_angles}")
-print(f"警示: {plan.warnings}")
-```
-
----
-
-## 完整工作流
-
-```
-用户问题 → Jury.think_complex(user_id="default")
-    ↓
-SupervisorAdapter.decompose() → 复杂度判断 + 专家组合 + DAG
-    ↓
-TeamIntegration.register_experts() → ContextBoard 注册
-    ↓
-按 execution_layers 并行执行各专家视角
-    ↓
-TeamIntegration 发布 CONCLUDED 状态
-    ↓
-Jury._synthesize_results() → 综合报告
-    ↓
-LearningsIntegration.capture_analysis_result() → 经验记录
-    ↓
-(可选) LearningsIntegration.check_promotions() → 高价值经验晋升 SOUL.md
-```
-
----
-
-## 复杂度等级与策略
-
-| 等级 | 触发关键词 | 策略 |
-|------|-----------|------|
-| `SIMPLE` | 是什么/介绍/简单说说 | 单专家直接回答 |
-| `MODERATE` | 分析/对比/评价/选择 | 3-4专家并行分析 |
-| `COMPLEX` | 创业/转型/人生规划/重大决策 | 全专家协作 + 多轮深化 |
-| `CRITICAL` | 投资/风险/大额/高风险 | 三角验证 + 警示检查 |
-
----
-
-## 专家组合模板（按问题类型）
-
-| 问题类型 | Required | Optional |
-|---------|----------|----------|
-| 职业发展 | 稻盛和夫, 德鲁克 | 乔布斯, 查理芒格, 马斯克 |
-| 人生规划 | 尼采, 加缪 | 苏格拉底, 王阳明, 孔子 |
-| 情感关系 | 佛学视角, 心理学视角 | 孔子, 亚里士多德 |
-| 创业商业 | 巴菲特, 查理芒格 | 孙正义, 马斯克, 马云 |
-| 学术研究 | 费曼, 西蒙 | 学科专家 |
-| 通用问题 | 苏格拉底 | 亚里士多德, 孔子, 尼采 |
-
----
-
-## JuryResult 关键字段
-
-| 字段 | 说明 |
-|------|------|
-| `outputs` | 各专家视角的输出（PerspectiveOutput） |
-| `analysis_metadata` | 分析元数据：问题、专家列表、问题类型、是否应用了画像 |
-| `followup_prompt` | 反馈收集提示（来自 FeedbackCollector） |
-| `team_context` | 团队协作上下文（来自 TeamIntegration） |
-| `get_experts_used()` | 提取所有使用的专家名称 |
-
----
-
-## 经验闭环机制
-
-1. **捕获**：`capture_analysis_result(question_type, experts_used, rating)`
-   - 相同专家组合 + 相同问题类型 → 合并计数
-   - rating ≥ 4 计入成功次数
-
-2. **查询**：`get_tips_for_question_type(question_type)`
-   - 返回历史评分 ≥3.5 的专家组合提示
-   - 格式：「尼采+加缪」历史评分 4.2/5，成功率 80%（5次使用）
-
-3. **晋升**：`check_promotions()`
-   - 使用次数 ≥5 且评分 ≥4 → 写入 SOUL.md
-   - 晋升后标记 resolved=true，避免重复写入
-
-4. **摘要**：`get_learning_summary(days=7)`
-   - 按问题类型统计次数、平均评分、组合数
-   - 列出各类别最佳专家组合
-
----
-
-## config.yaml 更新方法
+## 质量门禁
 
 1. **反馈是否被收集**：分析后必须触发反馈收集
 2. **画像是否更新**：收到反馈后必须更新 profile
@@ -425,4 +299,170 @@ LearningsIntegration.capture_analysis_result() → 经验记录
 
 ---
 
-_⚔️ 楚灵 · 超思考自优化专家系统 v6_
+## ⚠️ v6 内测版：ContextBoard 专家协作机制
+
+> **内测版本 · 实验性功能 · 不暴露给普通用户**
+
+### 概述
+
+ContextBoard 是 v6 的核心新特性，提供专家间的共享状态板。各专家不是独立输出，而是在共享的 ContextBoard 上发布状态和中间结论，其他专家可以读到这些结论来深化自己的分析。
+
+### 核心概念
+
+```
+专家协作阶段：
+  THINKING   → 专家正在积极分析
+  REVIEWING  → 专家正在审视其他专家的结论
+  WAITING   → 专家等待其他专家的结论
+  CONCLUDED → 专家已发布最终结论
+```
+
+### 数据结构
+
+```python
+from super_thinking.team import ContextBoard, TeamIntegration
+
+board = ContextBoard()  # 共享状态板
+
+# 注册专家（指定层）
+board.register("buffett", layer=0)   # 第0层：先执行
+board.register("morgan", layer=1)    # 第1层：可读到第0层结论
+board.register("dalio", layer=1)
+
+# 发布中间结论
+board.publish_insight("buffett", "市场风险：X", ExpertStatus.REVIEWING)
+
+# 完成后标记
+board.publish_concluded("buffett", "最终结论：分散投资")
+
+# 第1层专家读取第0层结论
+insights = board.get_visible_insights("morgan")
+# → {"buffett": "最终结论：分散投资"}
+```
+
+### TeamIntegration 封装
+
+```python
+from super_thinking.team import TeamIntegration
+
+integration = TeamIntegration(board)
+
+# 注册专家
+integration.register_expert("buffett", layer=0)
+integration.register_expert("dalio", layer=1)
+
+# 发布结论
+integration.publish_insight("buffett", "风险评估：...", ExpertStatus.REVIEWING)
+integration.publish_concluded("buffett", "最终结论：...")
+
+# 获取其他专家的结论
+insights = integration.get_insights_for("dalio")
+
+# 查询状态
+integration.is_concluded("buffett")  # True
+integration.all_concluded()           # False if others pending
+```
+
+### Jury 集成：`think_with_board()`
+
+```python
+from super_thinking.core.jury import Jury
+from super_thinking.team import ContextBoard
+
+jury = Jury()
+board = ContextBoard()
+
+# 定义专家层级
+layers = {
+    "meta_thinking": 0,   # 第0层：先执行
+    "risk_detail": 0,
+    "buffett": 1,         # 第1层：可读到第0层结论
+    "morgan": 1,
+}
+
+result = jury.think_with_board(
+    input="Should I invest in Tesla?",
+    execution_layers=layers,  # 可选，默认全在第0层
+    board=board,
+    mode="llm",              # 或 "auto", "force_all"
+)
+
+# 分析结果
+for output in result.get_outputs():
+    print(f"{output.perspective_name}: {output.analysis}")
+```
+
+### 分层执行流程
+
+```
+第0层执行：
+  Expert A ──publish_insight──→ ContextBoard
+  Expert B ──publish_insight──→ ContextBoard
+
+第1层执行（可读到第0层结论）：
+  Expert C reads: A的结论, B的结论
+  Expert C ──publish_insight──→ ContextBoard
+```
+
+### ContextBoard 可视化状态
+
+```python
+snapshot = board.get_board_state()
+
+snapshot.total_experts   # 总专家数
+snapshot.concluded_count # 已完成数
+snapshot.entries         # {expert_id: ExpertEntry}
+```
+
+### 专家 Entry 结构
+
+```python
+@dataclass
+class ExpertEntry:
+    expert_id: str
+    status: ExpertStatus  # THINKING/REVIEWING/WAITING/CONCLUDED
+    insight: Optional[str]  # 中间或最终结论
+    timestamp: float       # 发布时间戳
+    layer: int            # 所属层级
+```
+
+### 与 v5 的区别
+
+| 维度 | v5 | v6 内测版 |
+|------|-----|----------|
+| 专家执行 | 完全独立并行 | 通过 ContextBoard 共享中间结论 |
+| 执行顺序 | 全部并行 | 支持分层（layer 0 先执行） |
+| 跨专家学习 | 无 | 后层可读先层结论 |
+| 反馈闭环 | 有（经验晋升） | 砍掉（内测版不暴露） |
+| SupervisorAdapter | 有 | 砍掉（LLM自动路由） |
+
+### 限制
+
+- **内测版**：仅内部测试，不暴露给普通用户
+- **不暴露**：不写入文档首页、changelog 等公开材料
+- **无持久化**：ContextBoard 在内存中，进程结束即丢失
+- **无经验闭环**：不实现经验写入和自动化晋升
+
+### 测试
+
+```bash
+cd Agent-superthinking
+python -m pytest tests/test_team_integration.py -v
+```
+
+### 目录结构（v6 新增）
+
+```
+src/super_thinking/
+├── team/                      # ← v6 新增
+│   ├── __init__.py
+│   ├── context_board.py       # 共享状态板
+│   └── team_integration.py    # 协作协调层
+└── core/
+    └── jury.py               # ← 新增 think_with_board()
+```
+
+---
+
+_⚔️ 楚灵 · 超思考自优化专家系统 v5 + v6内测(ContextBoard)_
+

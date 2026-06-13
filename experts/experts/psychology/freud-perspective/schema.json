@@ -1,0 +1,29 @@
+{
+  "name": "freud-perspective",
+  "type": "methods",
+  "domain": "freud",
+  "displayName": "freud",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**可证伪性问题**：精神分析理论整体上难以通过实验验证，很多\"解释\"是事后诸葛亮式的",
+    "**文化局限**：基于19世纪末维也纳中产阶级患者推导，对其他文化背景的人适用性有限",
+    "**过度病理化风险**：用精神分析框架分析所有人、所有行为，会导致把正常现象病理化",
+    "**性驱力理论的片面性**：后来被自我心理学、客体关系、自体心理学等修正，只强调libido是不够的",
+    "**女性议题的性别偏见**：阳具羡慕、阉割焦虑等概念对女性的描述带有明显时代局限"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "freud-perspective"
+  },
+  "version": "1.0.0"
+}

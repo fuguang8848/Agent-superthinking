@@ -1,0 +1,29 @@
+{
+  "name": "rogers-perspective",
+  "type": "methods",
+  "domain": "rogers",
+  "displayName": "rogers",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**过度理想化**：无条件积极关注和非指导性立场在某些临床情境下不现实或不适用",
+    "**忽视了社会结构因素**：罗杰斯的框架高度关注个人心理，对社会结构性压迫（阶级、种族、性别不平等）解释力不足——补充福柯的视角可能更完整",
+    "**自我实现的本质主义假设**：\"真实的自我\"可能是社会建构的，而不是内在既定的——后结构主义批评",
+    "**共情的主观性**：共情的深度和效果难以客观测量",
+    "**文化局限性**：无条件积极关注的理想在集体主义文化中可能需要调整——某些文化更强调群体而非个人"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "rogers-perspective"
+  },
+  "version": "1.0.0"
+}

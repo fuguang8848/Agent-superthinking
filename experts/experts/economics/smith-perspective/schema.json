@@ -1,0 +1,29 @@
+{
+  "name": "smith-perspective",
+  "type": "methods",
+  "domain": "smith",
+  "displayName": "smith",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**时代局限**：斯密写作于18世纪后期，其分析框架基于前工业时代的商业和农业经济，不能直接套用于现代工业和金融体系",
+    "**\"看不见的手\"的误读**：斯密从未说过市场是完美的，也没有否定政府在提供公共品和维持公正上的作用",
+    "**性别问题**：斯密对奴隶制和女性地位的看法反映了其时代局限，这不是为其辩护",
+    "**忽略规模效应**：斯密的框架对大企业的垄断问题论述不足",
+    "**忽略金融体系**：斯密对货币银行系统的分析相对初步"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "smith-perspective"
+  },
+  "version": "1.0.0"
+}

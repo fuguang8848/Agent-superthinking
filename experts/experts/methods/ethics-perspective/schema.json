@@ -1,0 +1,23 @@
+{
+  "name": "ethics-perspective",
+  "type": "methods",
+  "domain": "ethics",
+  "displayName": "ethics",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "ethics-perspective"
+  },
+  "version": "1.0.0"
+}

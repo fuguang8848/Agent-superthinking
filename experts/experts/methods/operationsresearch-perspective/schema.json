@@ -1,0 +1,29 @@
+{
+  "name": "operationsresearch-perspective",
+  "type": "methods",
+  "domain": "operationsresearch",
+  "displayName": "operationsresearch",
+  "keywords": [],
+  "tags": [],
+  "models": [],
+  "heuristics": [],
+  "dna": {
+    "style": "",
+    "sentencePattern": "",
+    "attitude": "",
+    "certainty": ""
+  },
+  "limits": [
+    "**模型是现实的简化**：所有模型都有假设，结论依赖假设成立",
+    "**输入数据的质量决定输出质量**：Garbage in, Garbage out",
+    "**NP难问题的规模诅咒**：大实例无法精确求解，只能近似",
+    "**参数不确定性**：需求预测、概率分布估计有误差，影响最优解可靠性",
+    "**不考虑博弈行为**：被优化对象可能反向优化（如钻空子）"
+  ],
+  "source": {
+    "type": "framework",
+    "origin": "local",
+    "reference": "operationsresearch-perspective"
+  },
+  "version": "1.0.0"
+}
