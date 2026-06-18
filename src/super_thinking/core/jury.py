@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Any
 
 from super_thinking.core.registry import Registry, get_registry
@@ -35,6 +35,8 @@ class JuryResult:
     total_perspectives: int
     successful: int
     failed: int
+    # 2026-06-18 V 修: 加 analysis_metadata 字段 (报告 P0 bug: super_brain.py:174 调用 .get('experts_used') AttributeError)
+    analysis_metadata: dict[str, Any] = field(default_factory=dict)
 
     def get_outputs(self) -> list[PerspectiveOutput]:
         """Get list of successful outputs."""
@@ -178,6 +180,8 @@ class Jury:
             total_perspectives=len(perspectives),
             successful=len(outputs),
             failed=len(errors),
+            # 2026-06-18 V 修: 填 experts_used (从 routing_result.activated 取视角 ID 列表)
+            analysis_metadata={"experts_used": list(routing_result.activated)},
         )
         duration_ms = time.time() * 1000 - start_ms
         self.recorder.record_jury_complete(result, duration_ms)
