@@ -3,6 +3,7 @@ enabled_perspectives:
 - generated_emotion
 - generated_meta
 - generated_risk
+- generated_verification
 - magi_debate
 - mao_perspective
 - meta_thinking
