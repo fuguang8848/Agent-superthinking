@@ -1,4 +1,5 @@
 enabled_perspectives:
+- failing_perspective
 - generated_debate
 - generated_decision
 - generated_emotion
@@ -8,6 +9,8 @@ enabled_perspectives:
 - magi_debate
 - mao_perspective
 - meta_thinking
+- mock_perspective
+- mock_perspective_2
 - nuwa_meta
 - test_perspective
 - test_perspective_2

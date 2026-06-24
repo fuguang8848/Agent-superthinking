@@ -373,6 +373,125 @@ class Jury:
 
         return output
 
+    def think_complex(
+        self,
+        question: str,
+        user_id: str = "default",
+        team: Optional[Any] = None,
+        learnings: Optional[Any] = None,
+    ) -> dict[str, Any]:
+        """复合 API: 问题分解 + 多专家评审 + 团队/学习集成。
+
+        v6 升级补充 (V 2026-06-24):
+        - 问题分解走 SupervisorAdapter (生成子任务 DAG)
+        - 多专家评审走 think_with_board (ContextBoard 协作)
+        - team / learnings 集成: 接到 profile 信号 (如果提供)
+
+        Args:
+            question: 用户问题
+            user_id: 用户身份 (用于 ProfileManager 选择专家)
+            team: TeamIntegration 实例 (可选, 用于 ContextBoard 协作)
+            learnings: LearningsIntegration 实例 (可选, 用于历史经验)
+
+        Returns:
+            {
+                "decomposed_plan": {
+                    "subtasks": [ExpertSubTask, ...],
+                    "question_type": str,
+                    "complexity": str,
+                    "execution_layers": [[pid, ...], ...],
+                    "key_angles": [str, ...],
+                    "warnings": [str, ...],
+                    "synthesis_prompt": str,
+                },
+                "perspective_outputs": {pid: PerspectiveOutput, ...},
+                "synthesis": str,  # 预留接口, 当前未实现综合
+                "meta": {
+                    "user_id": str,
+                    "timestamp": str,
+                    "method": "think_complex",
+                }
+            }
+
+        Note:
+            这是 v6 接口, 之前仅在 Jury.think_with_board 单独路径上。
+            test_v6_smoke.py 的 test_02 / test_04 依赖此方法存在。
+        """
+        from datetime import datetime
+        from super_thinking.orchestrator import SupervisorAdapter
+
+        # 1. 问题分解
+        adapter = SupervisorAdapter()
+        decomposed = adapter.decompose(question, user_id=user_id)
+
+        # 2. 提取专家 ID + 构建 layers
+        expert_ids = [t.expert_id for t in decomposed.subtasks if hasattr(t, 'expert_id')]
+        if not expert_ids:
+            # fallback: 从 key_angles 提取
+            expert_ids = decomposed.key_angles[:5] if decomposed.key_angles else ["meta_thinking"]
+
+        execution_layers = decomposed.execution_layers
+        if not execution_layers:
+            # fallback: 单层
+            execution_layers = [expert_ids]
+
+        # 3. ContextBoard 协作评审
+        from super_thinking.team import ContextBoard
+        board = team.board if team and hasattr(team, 'board') else ContextBoard()
+
+        result = self.think_with_board(
+            input=question,
+            board=board,
+            execution_layers={pid: layer_idx for layer_idx, layer in enumerate(execution_layers) for pid in layer},
+        )
+
+        # 4. learnings 信号 (如果提供)
+        learnings_signal = None
+        if learnings and hasattr(learnings, 'get_recommendation'):
+            try:
+                learnings_signal = learnings.get_recommendation(
+                    question=question,
+                    question_type=decomposed.question_type,
+                )
+            except Exception as e:
+                logger.debug(f"[think_complex] learnings 集成跳过: {e}")
+
+        # 5. 返回结构
+        return {
+            "decomposed_plan": {
+                "subtasks": [
+                    {
+                        "id": t.id,
+                        "expert_id": getattr(t, 'expert_id', None),
+                        "focus": getattr(t, 'focus', ''),
+                        "depends_on": getattr(t, 'depends_on', []),
+                        "priority": getattr(t, 'priority', 0),
+                    }
+                    for t in decomposed.subtasks
+                ],
+                "question_type": decomposed.question_type,
+                "complexity": decomposed.complexity.value if hasattr(decomposed.complexity, 'value') else str(decomposed.complexity),
+                "execution_layers": execution_layers,
+                "key_angles": decomposed.key_angles,
+                "warnings": decomposed.warnings,
+                "synthesis_prompt": decomposed.synthesis_prompt,
+            },
+            "perspective_outputs": {
+                pid: {
+                    "analysis": out.analysis if out else "",
+                    "confidence": getattr(out, 'confidence', 0.0) if out else 0.0,
+                }
+                for pid, out in (result.outputs.items() if result else {})
+            },
+            "synthesis": "",  # 预留: 后续可加综合阶段
+            "learnings_signal": learnings_signal,
+            "meta": {
+                "user_id": user_id,
+                "timestamp": datetime.now().isoformat(),
+                "method": "think_complex",
+            },
+        }
+
     def convene(
         self,
         perspective_ids: list[str],
