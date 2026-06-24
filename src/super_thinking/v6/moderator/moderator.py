@@ -229,8 +229,8 @@ class DefaultModerator:
         conv_info = "无"
         if last_signal:
             conv_info = (
-                f"综合得分={last_signal.overall_score:.3f} "
-                f"| 重叠率={last_signal.overlap:.3f} "
+                f"综合得分={last_signal.score:.3f} "
+                f"| 重叠率={last_signal.overlap_rate:.3f} "
                 f"| 新论点密度={last_signal.new_arg_density:.3f} "
                 f"| 置信漂移={last_signal.confidence_drift:.3f}"
             )

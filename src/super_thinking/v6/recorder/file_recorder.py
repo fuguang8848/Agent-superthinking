@@ -99,8 +99,8 @@ class FileRecorder:
             return
         self._write("convergence", {
             "converged": signal.converged,
-            "overall_score": signal.overall_score,
-            "overlap": signal.overlap,
+            "score": signal.score,
+            "overlap_rate": signal.overlap_rate,
             "new_arg_density": signal.new_arg_density,
             "confidence_drift": signal.confidence_drift,
         })

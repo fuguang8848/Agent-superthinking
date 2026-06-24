@@ -1,4 +1,5 @@
 enabled_perspectives:
+- generated_debate
 - generated_decision
 - generated_emotion
 - generated_meta

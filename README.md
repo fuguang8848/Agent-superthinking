@@ -1,12 +1,5 @@
 # Agent-Superthinking
 
-> **V 6/19 19:19 README 修真** (SOP #34 跨仓 L1 对比):
-> - 失实 1: "融合层 Fusion" — 实际是 `fusion/` 目录 5 文件 (ConflictDetector / ConsensusFinder / Formatter)
-> - 失实 2: 52 人物统计 — 实际 140 expert files / 12 领域 (people/philosophy/science/military/methods/literature/economics/math/psychology/religion/frameworks/experts)
-> - 失实 3: 缺 Jury 描述 (V 6/18 修了 analysis_metadata 字段, src/super_thinking/core/jury.py:29)
-> - 实际 Router ✅ 存在, Expert ✅ 存在
-
-
 > 多维度思考框架：输入问题 → 路由层判断 → 用户选择轨别 → 并行分析 → 冲突检测 → 综合报告。
 
 **面向 AI 框架设计**：模块化、可扩展、按需加载，适合集成到各类 AI Agent 系统。
@@ -51,7 +44,7 @@
 | 组件 | 文件 | 类 | 说明 |
 |---|---|---|---|
 | **Router** | `core/router.py` | `class Router` | 路由层 (读取 INDEX_PEOPLE.md + INDEX_METHODS.md) |
-| **Jury** | `core/jury.py:29` | `class JuryResult` | 评审结果 (V 6/18 修真 analysis_metadata 字段) |
+| **Jury** | `core/jury.py:29` | `class JuryResult` | 评审结果 |
 | **Expert** | `v6/expert_statement.py` | `class ExpertStatement` | 专家陈述 |
 | **ConflictDetector** | `fusion/conflict.py` | `class ConflictDetector` | 多视角冲突检测 |
 | **ConsensusFinder** | `fusion/consensus.py` | `class ConsensusFinder` | 共识提炼 |

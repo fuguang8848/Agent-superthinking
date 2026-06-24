@@ -224,6 +224,7 @@ class ConvergenceSignal:
     score: float = 0.0  # 综合 0-1
     converged: bool = False  # 综合阈值 + 连续次数
     hard_converged: bool = False  # 硬规则触发
+    consecutive_count: int = 0  # 连续收敛轮数
     details: dict[str, Any] = field(default_factory=dict)
 
 
@@ -259,11 +260,6 @@ class RosterChange:
 class RosterChangeRequest:
     change: RosterChange | None = None
     external_consult: ExternalConsultationRequest | None = None
-
-
-@dataclass(frozen=True, kw_only=True)
-class ModeratorDecision:
-    action: Moderato
 
 
 @dataclass(frozen=True, kw_only=True)

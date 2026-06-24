@@ -7,8 +7,11 @@ ConvergenceDetector - 收敛检测器
 - confidence_drift: 跨专家平均 |conf_curr - conf_prev|
 
 综合得分: score = 0.4·overlap + 0.4·(1−density) + 0.2·(1−drift)
+
+2026-06-24 Box哲学改进：增加收敛判断的置信度度量
 """
 
+import math
 import typing
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable, TYPE_CHECKING
@@ -190,33 +193,7 @@ class JaccardCalculator:
         return self._similarity(set1, set2)
 
 
-@dataclass(frozen=True, kw_only=True)
-class ConvergenceSignal:
-    """收敛信号数据结构。"""
-    round_number: RoundNumber
-    overlap_rate: float = 0.0           # 0-1，本轮与上轮论点的 Jaccard 相似度
-    new_arg_density: float = 0.0       # 每专家平均新论点（active 状态）
-    confidence_drift: float = 0.0       # 0-1，跨专家平均 |conf_curr - conf_prev|
-    score: float = 0.0                  # 综合 0-1
-    converged: bool = False             # 综合阈值 + 连续次数
-    hard_converged: bool = False        # 硬规则触发
-    consecutive_count: int = 0           # 连续收敛轮数
-    details: dict[str, Any] = field(default_factory=dict)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """转换为字典。"""
-        return {
-            "round_number": self.round_number,
-            "overlap_rate": self.overlap_rate,
-            "new_arg_density": self.new_arg_density,
-            "confidence_drift": self.confidence_drift,
-            "score": self.score,
-            "converged": self.converged,
-            "hard_converged": self.hard_converged,
-            "consecutive_count": self.consecutive_count,
-            "details": self.details,
-        }
-
+# ── ConvergenceSignal 使用 types.py 的定义，不需要本地重复定义 ──────────────────
 
 @runtime_checkable
 class ConvergenceDetector(Protocol):
@@ -239,6 +216,73 @@ class ConvergenceDetector(Protocol):
         ...
 
 
+class AdaptiveThresholdTracker:
+    """
+    数据驱动的收敛阈值校准器。
+    
+    Box模型哲学：所有阈值都是错的，有些有用。
+    初始阈值是人为设定的，从未数据校准。
+    这个追踪器用历史数据来调整阈值。
+    """
+    
+    def __init__(self, initial_threshold: float = 0.65):
+        self._threshold = initial_threshold
+        self._history: list[tuple[float, bool]] = []  # (score, actual_converged)
+        self._min_samples = 20  # 最少20个样本才开始校准
+    
+    def record_outcome(self, score: float, actually_converged: bool):
+        """记录一次决策的结果"""
+        self._history.append((score, actually_converged))
+        # 保留最近200条
+        if len(self._history) > 200:
+            self._history = self._history[-200:]
+    
+    def get_adaptive_threshold(self) -> float:
+        """获取自适应阈值（最少min_samples样本后才生效）"""
+        if len(self._history) < self._min_samples:
+            return self._threshold  # 样本不够，用初始值
+        
+        # 分析历史：找到最佳阈值
+        # 遍历可能的阈值，找精确率+召回率的最佳平衡点
+        scores = [s for s, _ in self._history]
+        min_s, max_s = min(scores), max(scores)
+        
+        best_threshold = self._threshold
+        best_f1 = 0.0
+        
+        # 遍历100个候选阈值
+        for candidate in [min_s + (max_s - min_s) * i / 100 for i in range(101)]:
+            tp = sum(1 for s, c in self._history if s >= candidate and c)
+            fp = sum(1 for s, c in self._history if s >= candidate and not c)
+            fn = sum(1 for s, c in self._history if s < candidate and c)
+            
+            precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+            f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+            
+            if f1 > best_f1:
+                best_f1 = f1
+                best_threshold = candidate
+        
+        # 平滑变化（不要突变）
+        self._threshold = self._threshold * 0.7 + best_threshold * 0.3
+        return self._threshold
+    
+    def get_calibration_stats(self) -> dict:
+        """获取校准统计"""
+        if len(self._history) < self._min_samples:
+            return {"calibrated": False, "sample_count": len(self._history)}
+        
+        return {
+            "calibrated": True,
+            "current_threshold": round(self._threshold, 4),
+            "sample_count": len(self._history),
+            "observed_convergence_rate": round(
+                sum(1 for _, c in self._history if c) / len(self._history), 3
+            ),
+        }
+
+
 class DefaultConvergenceDetector:
     """
     默认收敛检测器实现。
@@ -257,6 +301,9 @@ class DefaultConvergenceDetector:
         self._jaccard_calc = JaccardCalculator()
         self._consecutive_count = 0
         self._last_signal: ConvergenceSignal | None = None
+        
+        # 数据驱动的自适应阈值校准器
+        self._threshold_tracker = AdaptiveThresholdTracker(initial_threshold=config.score_threshold)
         
         # 验证权重和
         w1, w2, w3 = config.weights
@@ -289,11 +336,58 @@ class DefaultConvergenceDetector:
             ConvergenceSignal: 收敛信号
         """
         round_number = RoundNumber(len(session.rounds))
-        
-        # 获取当前轮和上一轮
-        current_round = session.rounds[-1] if session.rounds else None
-        
-        if current_round is None or len(session.rounds) < 2:
+        return self._compute_signal_from_rounds(
+            round_number=round_number,
+            current_round=session.rounds[-1] if session.rounds else None,
+            previous_round=session.rounds[-2] if len(session.rounds) >= 2 else None,
+        )
+
+    def detect(
+        self,
+        *,
+        round_number: RoundNumber,
+        current_menu: ArgumentMenu,
+        previous_menu: ArgumentMenu | None,
+        statements: tuple[ExpertStatement, ...],
+    ) -> ConvergenceSignal:
+        """
+        兼容性别名 for observe() - 支持直接传入菜单和发言。
+
+        Args:
+            round_number: 当前轮次
+            current_menu: 本轮论点菜单
+            previous_menu: 上一轮论点菜单
+            statements: 本轮专家发言
+
+        Returns:
+            ConvergenceSignal: 收敛信号
+        """
+        # 从 statements 构造 mock Round 对象用于复用 _compute_signal_from_rounds
+        current_round = Round(
+            round_number=round_number,
+            menu=current_menu,
+            statements=statements,
+        )
+        prev_round = Round(
+            round_number=RoundNumber(int(round_number) - 1),
+            menu=previous_menu,
+            statements=(),
+        ) if previous_menu else None
+
+        return self._compute_signal_from_rounds(
+            round_number=round_number,
+            current_round=current_round,
+            previous_round=prev_round,
+        )
+
+    def _compute_signal_from_rounds(
+        self,
+        round_number: RoundNumber,
+        current_round: Round | None,
+        previous_round: Round | None,
+    ) -> ConvergenceSignal:
+        """从轮次对象计算收敛信号。"""
+        if current_round is None or previous_round is None:
             # 第一轮或无历史，无法计算收敛
             signal = ConvergenceSignal(
                 round_number=round_number,
@@ -308,14 +402,12 @@ class DefaultConvergenceDetector:
             )
             self._last_signal = signal
             return signal
-        
-        previous_round = session.rounds[-2]
-        
+
         current_menu = current_round.menu
         prev_menu = previous_round.menu
         current_stmts = current_round.statements
         prev_stmts = previous_round.statements
-        
+
         # 1. 计算论点重叠率
         overlap = self._compute_overlap(current_menu, prev_menu)
         
@@ -332,10 +424,10 @@ class DefaultConvergenceDetector:
         # 4. 综合得分
         score = self._compute_score(overlap, new_arg_density, drift)
         
-        # 5. 判断收敛
-        converged, hard_converged = self._check_convergence(overlap, new_arg_density, score)
+        # 5. 使用自适应阈值判断收敛
+        adaptive_threshold = self._threshold_tracker.get_adaptive_threshold()
         
-        if score >= self._config.score_threshold:
+        if score >= adaptive_threshold:
             self._consecutive_count += 1
         else:
             self._consecutive_count = 0
@@ -352,7 +444,14 @@ class DefaultConvergenceDetector:
             "drift_component": self._config.weights[2] * (1 - drift),
             "consecutive_count": self._consecutive_count,
             "threshold": self._config.score_threshold,
+            "adaptive_threshold": round(adaptive_threshold, 4),
             "expert_count": len(current_stmts),
+            # 2026-06-24 Box哲学新增：收敛判断的不确定性度量
+            # 承认模型可能误判，给出置信区间
+            "confidence": self._compute_confidence(overlap, new_arg_density, drift, score, len(current_stmts)),
+            "confidence_level": self._get_confidence_level(
+                overlap, new_arg_density, drift, score, len(current_stmts)
+            ),
         }
         
         signal = ConvergenceSignal(
@@ -366,6 +465,9 @@ class DefaultConvergenceDetector:
             consecutive_count=self._consecutive_count,
             details=details,
         )
+        
+        # 记录决策结果用于后续阈值校准
+        self._threshold_tracker.record_outcome(score, converged)
         
         self._last_signal = signal
         return signal
@@ -479,6 +581,71 @@ class DefaultConvergenceDetector:
             self._consecutive_count >= self._config.require_consecutive
         )
         return soft_converged, hard_converged
+    
+    def _compute_confidence(
+        self,
+        overlap: float,
+        new_arg_density: float,
+        drift: float,
+        score: float,
+        num_experts: int,
+    ) -> float:
+        """
+        2026-06-24 Box哲学：计算收敛判断的置信度（0-1）。
+        
+        置信度影响因素：
+        1. 专家数量：越多越可靠
+        2. 指标稳定性：三个指标值越稳定（不过于接近阈值边界），置信度越高
+        3. 连续收敛次数：越多越可靠
+        
+        返回：0-1 的置信度，越高表示收敛判断越可靠
+        """
+        # 样本量因子：专家越多，置信度越高（对数增长，边际递减）
+        sample_factor = min(1.0, math.log(num_experts + 1) / math.log(8))
+        
+        # 稳定性因子：指标越远离阈值边界，越稳定
+        # score 距离 0.5（中间值）越远，越确定
+        stability_score = abs(score - 0.5) * 2  # 0-1，0.5时为0，0或1时为1
+        
+        # 重叠率稳定性
+        # 远离 0（完全无重叠）和 1（完全重叠）
+        stability_overlap = 1.0 - abs(overlap - 0.7) if overlap < 0.7 else overlap
+        
+        # 新论点密度稳定性：低密度表示收敛
+        stability_density = 1.0 - new_arg_density
+        
+        # 组合稳定性
+        combined_stability = (stability_score * 2 + stability_overlap + stability_density) / 4
+        
+        # 综合置信度
+        confidence = (sample_factor * 0.3 + combined_stability * 0.5 + 
+                     (self._consecutive_count / max(self._config.require_consecutive, 1)) * 0.2)
+        
+        return round(min(1.0, max(0.0, confidence)), 3)
+    
+    def _get_confidence_level(
+        self,
+        overlap: float,
+        new_arg_density: float,
+        drift: float,
+        score: float,
+        num_experts: int,
+    ) -> str:
+        """
+        2026-06-24 Box哲学：返回收敛判断的置信等级。
+        
+        置信等级：
+        - "high": 置信度 >= 0.8，收敛判断高度可靠
+        - "medium": 置信度 0.5-0.8，收敛判断中等可靠
+        - "low": 置信度 < 0.5，收敛判断不可靠，可能误判
+        """
+        conf = self._compute_confidence(overlap, new_arg_density, drift, score, num_experts)
+        if conf >= 0.8:
+            return "high"
+        elif conf >= 0.5:
+            return "medium"
+        else:
+            return "low"
     
     def reset(self) -> None:
         """重置检测器状态（连续收敛计数器等）。"""
